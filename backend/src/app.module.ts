@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { configuration } from '../config/configuration';
-import { AppConfigType } from '../config/config.type';
+import { configuration } from './config/configuration';
+import { AppConfigType } from './config/config.type';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
