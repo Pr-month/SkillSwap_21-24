@@ -1,14 +1,11 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:17
     container_name: postgres
     restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: SkillSwapDB
+    env_file:
+      - backend/.env
+# надо убрать будет порт перед продом или подумать как с этим быть
     ports:
       - '5432:5432'
     volumes:
