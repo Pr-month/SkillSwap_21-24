@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { SkillsModule } from './skills/skills.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -18,6 +19,12 @@ import { AuthModule } from './auth/auth.module';
       inject: [configuration.KEY],
       useFactory: (config: AppConfigType) => ({
         ...config.db,
+      }),
+    }),
+    JwtModule.registerAsync({
+      inject: [configuration.KEY],
+      useFactory: (config: AppConfigType) => ({
+        secret: config.jwtSecret,
       }),
     }),
     UsersModule,
