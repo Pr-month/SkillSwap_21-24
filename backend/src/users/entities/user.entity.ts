@@ -1,10 +1,23 @@
 import { CategoryEntity } from '../../categories/entities/categories.entity';
 import { SkillEntity } from '../../skills/entities/skills.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  BeforeInsert,
+} from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
+}
+
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  NOTSTATED = 'notStated',
 }
 
 @Entity('users')
@@ -30,8 +43,12 @@ export class UserEntity {
   @Column()
   city: string;
 
-  @Column()
-  gender: string;
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    default: Gender.NOTSTATED,
+  })
+  gender: Gender;
 
   @Column()
   avatar: string;
@@ -54,4 +71,9 @@ export class UserEntity {
 
   @Column()
   refreshToken: string;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
 }
