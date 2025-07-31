@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserRole } from '../../users/entities/user.entity'; // Путь может отличаться
+import { UserRole } from '../../users/entities/user.entity';
 
 interface JwtPayload {
   sub: number;
   email: string;
-  roles: UserRole[]; // Используем ваш enum
+  roles: UserRole[];
   iat?: number;
   exp?: number;
 }
@@ -29,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       email: payload.email,
-      roles: payload.roles || [UserRole.USER], // Дефолтное значение
+      roles: payload.roles || [UserRole.USER],
     };
   }
 }
