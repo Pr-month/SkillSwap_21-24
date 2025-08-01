@@ -8,6 +8,8 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { SkillsModule } from './skills/skills.module';
 import { CategoriesModule } from './categories/categories.module';
+import { JwtStrategy } from './auth/strategies/jwt.strategy';
+import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { CategoriesModule } from './categories/categories.module';
     CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy, RefreshTokenStrategy],
+  exports: [JwtStrategy, RefreshTokenStrategy],
 })
 export class AppModule {}
