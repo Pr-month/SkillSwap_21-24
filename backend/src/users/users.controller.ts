@@ -33,4 +33,14 @@ export class UsersController {
   ): Promise<UserEntity | null> {
     return this.usersService.updateCurrentUser(userId, updateData);
   }
+
+  // Обновление пароля текущего пользователя
+  //@UseGuards(JwtAuthGuard) //TODO: Расскомментировать после реализации JWT
+  @Patch('me/password')
+  async updatePassword(
+    @Headers('x-user-id') userId: string, //TODO: ЗАМЕНИТЬ НА JWT
+    @Body() updateData: { password: string },
+  ): Promise<UserEntity | null> {
+    return this.usersService.updatePassword(userId, updateData.password);
+  }
 }
