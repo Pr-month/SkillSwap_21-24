@@ -6,6 +6,10 @@ export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
 }
+export enum UserGender {
+  MALE = 'male',
+  FEMALE = 'female',
+}
 
 @Entity('users')
 export class UserEntity {
@@ -30,8 +34,12 @@ export class UserEntity {
   @Column()
   city: string;
 
-  @Column()
-  gender: string;
+  @Column({
+    type: 'enum',
+    enum: UserGender,
+    default: UserGender.MALE,
+  })
+  gender: UserGender;
 
   @Column()
   avatar: string;
