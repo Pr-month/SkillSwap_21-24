@@ -11,7 +11,13 @@ export class UsersService {
     private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
+  // Получение всех пользователей
   async findAll(): Promise<UserEntity[]> {
     return this.usersRepository.find();
+  }
+
+  // Получение текущего пользователя
+  async getCurrentUser(id: string): Promise<UserEntity | null> {
+    return this.usersRepository.findOne({ where: { id } });
   }
 }
