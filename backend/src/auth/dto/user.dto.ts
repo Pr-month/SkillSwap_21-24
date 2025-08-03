@@ -4,11 +4,11 @@ import {
   IsDate,
   IsEnum,
   IsUrl,
-  IsArray,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Gender } from '../../users/entities/user.entity';
+import { CreateSkillDTO } from '../../skills/dto/skill.dto';
 
 export class CreateUserDTO {
   @IsString()
@@ -34,18 +34,4 @@ export class CreateUserDTO {
   @ValidateNested({ each: true })
   @Type(() => CreateSkillDTO)
   skill: CreateSkillDTO;
-}
-
-export class CreateSkillDTO {
-  @IsString()
-  title: string;
-  @IsString()
-  description: string;
-  @IsString()
-  categoryName: string;
-  @IsString()
-  subcategoryName: string;
-  @IsArray()
-  @IsUrl()
-  images: string[];
 }

@@ -24,7 +24,11 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.registerAsync({
       inject: [configuration.KEY],
       useFactory: (config: AppConfigType) => ({
-        secret: config.jwtSecret,
+        secret: config.jwt.jwtSecret,
+        global: true,
+        signOptions: {
+          expiresIn: config.jwt.expiresIn, //Время жизни токена
+        },
       }),
     }),
     UsersModule,

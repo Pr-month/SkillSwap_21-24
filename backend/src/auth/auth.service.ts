@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity, UserRole } from '../users/entities/user.entity';
@@ -6,6 +6,8 @@ import { SkillEntity } from '../skills/entities/skills.entity';
 import { CategoryEntity } from '../categories/entities/categories.entity';
 import { CreateUserDTO } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
+import { configuration } from '../config/configuration';
+import { AppConfigType } from '../config/config.type';
 
 @Injectable()
 export class AuthService {
@@ -16,19 +18,19 @@ export class AuthService {
     private readonly skillRepository: Repository<SkillEntity>,
     @InjectRepository(CategoryEntity)
     private readonly categotyRepository: Repository<CategoryEntity>,
+    @Inject(configuration.KEY)
+    private readonly config: AppConfigType,
 
     private readonly jwtService: JwtService,
   ) {}
 
-  async generateTokens(userId: string, email: string) {
+  async _generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
 
-    const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '15m',
-    });
+    const accessToken = await this.jwtService.signAsync(payload);
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '7d',
+      secret: this.config.jwt.jwtSecret,
     });
 
     return {
@@ -43,7 +45,7 @@ export class AuthService {
     //Ищем указанную категорию
     const category = await this.categotyRepository.findOne({
       where: {
-        name: userData.skill.categoryName,
+        id: userData.skill.category,
       },
     });
     // Если ее нет кидаем исключение
@@ -67,7 +69,7 @@ export class AuthService {
       owner: user,
     });
     // Генерим токены
-    const { accessToken, refreshToken } = await this.generateTokens(
+    const { accessToken, refreshToken } = await this._generateTokens(
       user.id,
       user.email,
     );
