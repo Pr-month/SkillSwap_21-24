@@ -8,17 +8,7 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-
-export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
-}
-
-export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  NOTSTATED = 'notStated',
-}
+import { Gender, UserRole } from '../enums';
 
 @Entity('users')
 export class UserEntity {
@@ -46,7 +36,6 @@ export class UserEntity {
   @Column({
     type: 'enum',
     enum: Gender,
-    default: Gender.NOTSTATED,
   })
   gender: Gender;
 

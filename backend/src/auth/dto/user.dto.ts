@@ -1,14 +1,11 @@
 import {
-  IsString,
   IsEmail,
-  IsDate,
   IsEnum,
-  IsUrl,
-  ValidateNested,
+  IsString,
+  IsUrl
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Gender } from '../../users/entities/user.entity';
-import { CreateSkillDTO } from '../../skills/dto/skill.dto';
+
+import { Gender } from 'src/users/enums';
 
 export class CreateUserDTO {
   @IsString()
@@ -19,7 +16,7 @@ export class CreateUserDTO {
   password: string;
   @IsString()
   about: string;
-  @IsDate()
+  @IsString()
   birthdate: string;
   @IsString()
   city: string;
@@ -27,11 +24,11 @@ export class CreateUserDTO {
   gender: Gender;
   @IsUrl()
   avatar: string;
-  @IsString()
-  category: string;
-  @IsString()
-  subcategory: string;
-  @ValidateNested({ each: true })
-  @Type(() => CreateSkillDTO)
-  skill: CreateSkillDTO;
+  // @IsString()
+  // category: string;
+  // @IsString()
+  // subcategory: string;
+  // @ValidateNested({ each: true })
+  // @Type(() => CreateSkillDTO)
+  // skill: CreateSkillDTO;
 }

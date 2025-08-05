@@ -3,10 +3,9 @@ import { DataSource } from 'typeorm';
 
 import typeOrmConfig from '../src/config/typeorm.config';
 import {
-  Gender,
   UserEntity,
-  UserRole,
 } from '../src/users/entities/user.entity';
+import { Gender, UserRole } from 'src/users/enums';
 
 async function seed() {
   const dataSource = new DataSource(typeOrmConfig);

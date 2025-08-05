@@ -1,13 +1,14 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity, UserRole } from '../users/entities/user.entity';
-import { SkillEntity } from '../skills/entities/skills.entity';
-import { CategoryEntity } from '../categories/entities/categories.entity';
-import { CreateUserDTO } from './dto/user.dto';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { configuration } from '../config/configuration';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CategoryEntity } from '../categories/entities/categories.entity';
 import { AppConfigType } from '../config/config.type';
+import { configuration } from '../config/configuration';
+import { SkillEntity } from '../skills/entities/skills.entity';
+import { UserEntity } from '../users/entities/user.entity';
+import { CreateUserDTO } from './dto/user.dto';
+import { UserRole } from 'src/users/enums';
 
 @Injectable()
 export class AuthService {
@@ -42,32 +43,12 @@ export class AuthService {
   async createUser(
     userData: CreateUserDTO,
   ): Promise<{ success: boolean; accessToken: string }> {
-    //Ищем указанную категорию
-    const category = await this.categotyRepository.findOne({
-      where: {
-        id: userData.skill.category,
-      },
-    });
-    // Если ее нет кидаем исключение
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-    // Создаем скилл указанный при регистрации и привязываем к нему категорию
-    const skill = this.skillRepository.create({
-      ...userData.skill,
-      category: category,
-    });
-    await this.skillRepository.save(skill);
     // Создаем пользователя
     const user = this.userRepository.create({
       ...userData,
       role: UserRole.USER,
     });
     await this.userRepository.save(user);
-    // Привязываем создателя скила к пользователю
-    await this.skillRepository.update(skill.id, {
-      owner: user,
-    });
     // Генерим токены
     const { accessToken, refreshToken } = await this._generateTokens(
       user.id,
