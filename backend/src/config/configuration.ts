@@ -3,6 +3,9 @@ import typeOrmConfig from './typeorm.config';
 
 export const configuration = registerAs('APP_CONFIG', () => ({
   db: typeOrmConfig,
-  port: process.env.PORT || 3000,
-  // jwtSecret: process.env.JWT_SECRET,
+  port: Number(process.env.PORT) || 3000,
+  jwt: {
+    jwtSecret: process.env.JWT_SECRET || 'secret',
+    expiresIn: process.env.EXPRIRES_IN || '15m',
+  },
 }));
