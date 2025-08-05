@@ -1,6 +1,13 @@
-import { Body, Controller, Get, Headers, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 
-//import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; //TODO: Расскомментировать после реализации JWT
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; //TODO: Расскомментировать после реализации JWT
 
 import { UsersService } from './users.service';
 import { UserEntity } from './entities/user.entity';
@@ -16,31 +23,31 @@ export class UsersController {
   }
 
   // Получение текущего пользователя
-  //@UseGuards(JwtAuthGuard) //TODO: Расскомментировать после реализации JWT
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getCurrentUser(
-    @Headers('x-user-id') userId: string, //TODO: ЗАМЕНИТЬ НА JWT
+    @Request() req, // Получаем user из JWT
   ): Promise<UserEntity | null> {
-    return this.usersService.getCurrentUser(userId);
+    return this.usersService.getCurrentUser(req.user.id);
   }
 
   // Обновление текущего пользователя
-  //@UseGuards(JwtAuthGuard) //TODO: Расскомментировать после реализации JWT
+  @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateCurrentUser(
-    @Headers('x-user-id') userId: string, //TODO: ЗАМЕНИТЬ НА JWT
+    @Request() req,
     @Body() updateData: Partial<UserEntity>,
   ): Promise<UserEntity | null> {
-    return this.usersService.updateCurrentUser(userId, updateData);
+    return this.usersService.updateCurrentUser(req.user.id, updateData);
   }
 
   // Обновление пароля текущего пользователя
-  //@UseGuards(JwtAuthGuard) //TODO: Расскомментировать после реализации JWT
+  @UseGuards(JwtAuthGuard)
   @Patch('me/password')
   async updatePassword(
-    @Headers('x-user-id') userId: string, //TODO: ЗАМЕНИТЬ НА JWT
+    @Request() req,
     @Body() updateData: { password: string },
   ): Promise<UserEntity | null> {
-    return this.usersService.updatePassword(userId, updateData.password);
+    return this.usersService.updatePassword(req.user.id, updateData.password);
   }
 }
