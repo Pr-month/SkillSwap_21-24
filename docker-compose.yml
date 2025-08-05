@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    restart: always
+    env_file:
+      - backend/.env
+# надо убрать будет порт перед продом или подумать как с этим быть
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    restart: always
+    env_file:
+      - backend/.env
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/public:/app/public
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    networks:
+      - internal
+
+volumes:
+  pgdata:
+
+networks:
+  internal:
