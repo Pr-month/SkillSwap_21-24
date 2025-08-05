@@ -1,24 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserRole } from '../../users/entities/user.entity';
 import { Request } from 'express';
-
-interface RefreshTokenPayload {
-  sub: number;
-  email: string;
-  roles: UserRole[];
-  refreshToken: string;
-  iat?: number;
-  exp?: number;
-}
-
-interface RefreshUser {
-  userId: number;
-  email: string;
-  roles: UserRole[];
-  refreshToken: string;
-}
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { RefreshTokenPayload, RefreshUser } from '../auth.types';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(

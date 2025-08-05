@@ -18,7 +18,7 @@ export class SkillEntity {
   description: string;
   @OneToOne(() => CategoryEntity, (categoty) => categoty.id)
   category: CategoryEntity;
-  @Column({ array: true })
+  @Column({ array: true, type: 'text' })
   images: string[];
   @ManyToOne(() => UserEntity, (user) => user.skills)
   owner: UserEntity;

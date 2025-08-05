@@ -3,8 +3,8 @@ import { DataSource } from 'typeorm';
 
 import typeOrmConfig from '../src/config/typeorm.config';
 import {
+  Gender,
   UserEntity,
-  UserGender,
   UserRole,
 } from '../src/users/entities/user.entity';
 
@@ -22,7 +22,7 @@ async function seed() {
       about: 'Frontend developer',
       birthdate: new Date('2000-01-01'),
       city: 'Moscow',
-      gender: UserGender.MALE,
+      gender: Gender.MALE,
       avatar: 'ivan.png',
       role: UserRole.USER,
       refreshToken: '',
@@ -34,7 +34,7 @@ async function seed() {
       about: 'Backend developer',
       birthdate: new Date('2000-01-02'),
       city: 'Moscow',
-      gender: UserGender.MALE,
+      gender: Gender.MALE,
       avatar: 'vasya.png',
       role: UserRole.ADMIN,
       refreshToken: '',

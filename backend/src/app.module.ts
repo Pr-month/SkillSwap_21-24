@@ -24,10 +24,10 @@ import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
       }),
     }),
     JwtModule.registerAsync({
+      global: true,
       inject: [configuration.KEY],
       useFactory: (config: AppConfigType) => ({
         secret: config.jwt.jwtSecret,
-        global: true,
         signOptions: {
           expiresIn: config.jwt.expiresIn, //Время жизни токена
         },
@@ -42,4 +42,4 @@ import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
   providers: [AppService, JwtStrategy, RefreshTokenStrategy],
   exports: [JwtStrategy, RefreshTokenStrategy],
 })
-export class AppModule {}
+export class AppModule { }
