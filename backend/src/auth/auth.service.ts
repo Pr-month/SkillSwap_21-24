@@ -122,10 +122,7 @@ export class AuthService {
     };
   }
 
-  async refreshToken(
-    token: string,
-    res: Response,
-  ): Promise<{ success: boolean; accessToken: string }> {
+  async deleterefreshToken(token: string): Promise<UserEntity> {
     const { userId, email, role } = await this.jwtService.verifyAsync<{
       userId: string;
       email: string;
@@ -144,6 +141,17 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('Invalid or expired refresh token');
     }
+    await this.userRepository.update(user.id, {
+      refreshToken: undefined,
+    });
+    return user;
+  }
+
+  async refreshToken(
+    token: string,
+    res: Response,
+  ): Promise<{ success: boolean; accessToken: string }> {
+    const user = await this.deleterefreshToken(token);
     const { accessToken, refreshToken } = await this._generateTokens(
       user.id,
       user.email,
@@ -156,6 +164,17 @@ export class AuthService {
     return {
       success: true,
       accessToken: accessToken,
+    };
+  }
+
+  async loguotUser(
+    token: string,
+    res: Response,
+  ): Promise<{ success: boolean }> {
+    await this.deleterefreshToken(token);
+    res.cookie('refreshToken', '');
+    return {
+      success: true,
     };
   }
 }

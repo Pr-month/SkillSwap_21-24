@@ -25,8 +25,16 @@ export class AuthController {
     return this.authService.loginUser(userData, res);
   }
   @Post('logout')
-  logoutUser(@Body() userData: CreateUserDTO) {
-    return this.authService.createUser(userData);
+  logoutUser(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const cookies = request.cookies as { refreshToken?: string };
+    const refreshToken = cookies.refreshToken;
+    if (typeof refreshToken !== 'string') {
+      throw new UnauthorizedException('Refresh token missing or malformed');
+    }
+    return this.authService.loguotUser(refreshToken, response);
   }
   @Post('refresh')
   refreshToken(
