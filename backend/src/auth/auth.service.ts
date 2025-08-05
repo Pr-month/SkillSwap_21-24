@@ -121,4 +121,41 @@ export class AuthService {
       accessToken: accessToken,
     };
   }
+
+  async refreshToken(
+    token: string,
+    res: Response,
+  ): Promise<{ success: boolean; accessToken: string }> {
+    const { userId, email, role } = await this.jwtService.verifyAsync<{
+      userId: string;
+      email: string;
+      role: UserRole;
+    }>(token, {
+      secret: this.config.jwt.jwtSecret,
+    });
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+        email: email,
+        role: role,
+        refreshToken: token,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('Invalid or expired refresh token');
+    }
+    const { accessToken, refreshToken } = await this._generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
+    await this.userRepository.update(user.id, {
+      refreshToken,
+    });
+    res.cookie('refreshToken', user.refreshToken);
+    return {
+      success: true,
+      accessToken: accessToken,
+    };
+  }
 }
