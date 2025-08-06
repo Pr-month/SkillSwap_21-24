@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './auth/strategies/jwt.strategy';
 import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -36,10 +37,11 @@ import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
     UsersModule,
     SkillsModule,
     CategoriesModule,
+    FilesModule,
     AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtStrategy, RefreshTokenStrategy],
   exports: [JwtStrategy, RefreshTokenStrategy],
 })
-export class AppModule { }
+export class AppModule {}

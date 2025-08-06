@@ -1,9 +1,4 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsString,
-  IsUrl
-} from 'class-validator';
+import { IsEmail, IsEnum, IsString, IsUrl } from 'class-validator';
 
 import { Gender } from 'src/users/enums';
 
