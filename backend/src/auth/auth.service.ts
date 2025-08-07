@@ -7,7 +7,7 @@ import { AppConfigType } from '../config/config.type';
 import { configuration } from '../config/configuration';
 import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
-import { CreateUserDTO } from './dto/user.dto';
+import { CreateUserDTO } from '../users/dto/user.dto';
 import { UserRole } from 'src/users/enums';
 
 @Injectable()
