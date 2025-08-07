@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
@@ -27,4 +35,14 @@ export class SkillsController {
   ): Promise<SkillEntity> {
     return this.skillsService.createSkill(createSkillDto);
   }
+
+  // Изменение навыка
+  @Patch(':id')
+  async updateSkill(
+    @Request() req,
+    @Body() updateSkillDto: Partial<CreateSkillDTO>,
+  ): Promise<SkillEntity> {
+    return this.skillsService.updateSkill(req.params.id, updateSkillDto);
+  }
+
 }

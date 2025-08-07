@@ -60,4 +60,42 @@ export class SkillsService {
 
     return this.skillRepository.save(skill);
   }
+
+  // Изменение навыка
+  async updateSkill(
+    skillId: string,
+    updateSkillDto: Partial<CreateSkillDTO>,
+  ): Promise<SkillEntity> {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+      relations: ['owner', 'category'],
+    });
+    if (!skill) {
+      throw new Error('Skill not found');
+    }
+
+    if (updateSkillDto.owner) {
+      const user = await this.userRepository.findOne({
+        where: { id: updateSkillDto.owner },
+      });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      skill.owner = user;
+    }
+
+    if (updateSkillDto.category) {
+      const category = await this.categoryRepository.findOne({
+        where: { id: updateSkillDto.category },
+      });
+      if (!category) {
+        throw new Error('Category not found');
+      }
+      skill.category = category;
+    }
+
+    Object.assign(skill, updateSkillDto);
+
+    return this.skillRepository.save(skill);
+  }
 }
