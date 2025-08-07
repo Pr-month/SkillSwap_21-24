@@ -1,4 +1,4 @@
-import { IsString, IsUrl, IsArray } from 'class-validator';
+import { IsString, IsArray } from 'class-validator';
 
 export class CreateSkillDTO {
   @IsString()
@@ -8,6 +8,7 @@ export class CreateSkillDTO {
   @IsString()
   category: string;
   @IsArray()
-  @IsUrl()
   images: string[];
+  @IsString()
+  owner: string;
 }
