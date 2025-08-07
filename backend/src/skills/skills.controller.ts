@@ -1,12 +1,16 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Patch,
   Post,
   Query,
-  Request,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common';
+
 
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
@@ -39,10 +43,16 @@ export class SkillsController {
   // Изменение навыка
   @Patch(':id')
   async updateSkill(
-    @Request() req,
+    @Param('id') id: string,
     @Body() updateSkillDto: Partial<CreateSkillDTO>,
   ): Promise<SkillEntity> {
-    return this.skillsService.updateSkill(req.params.id, updateSkillDto);
+    return this.skillsService.updateSkill(id, updateSkillDto);
   }
 
+  // Удаление навыка
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteSkill(@Param('id') id: string): Promise<void> {
+    return this.skillsService.deleteSkill(id);
+  }
 }

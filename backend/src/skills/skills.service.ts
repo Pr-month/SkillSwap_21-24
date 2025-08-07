@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UserEntity } from '../users/entities/user.entity';
@@ -40,14 +40,14 @@ export class SkillsService {
       where: { id: createSkillDto.owner },
     });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const category = await this.categoryRepository.findOne({
       where: { id: createSkillDto.category },
     });
     if (!category) {
-      throw new Error('Category not found');
+      throw new NotFoundException('Category not found');
     }
 
     const skill = this.skillRepository.create({
@@ -71,7 +71,7 @@ export class SkillsService {
       relations: ['owner', 'category'],
     });
     if (!skill) {
-      throw new Error('Skill not found');
+      throw new NotFoundException('Skill not found');
     }
 
     if (updateSkillDto.owner) {
@@ -79,7 +79,7 @@ export class SkillsService {
         where: { id: updateSkillDto.owner },
       });
       if (!user) {
-        throw new Error('User not found');
+        throw new NotFoundException('User not found');
       }
       skill.owner = user;
     }
@@ -89,7 +89,7 @@ export class SkillsService {
         where: { id: updateSkillDto.category },
       });
       if (!category) {
-        throw new Error('Category not found');
+        throw new NotFoundException('Category not found');
       }
       skill.category = category;
     }
@@ -97,5 +97,17 @@ export class SkillsService {
     Object.assign(skill, updateSkillDto);
 
     return this.skillRepository.save(skill);
+  }
+
+  // Удаление навыка
+  async deleteSkill(skillId: string): Promise<void> {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+    });
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    await this.skillRepository.remove(skill);
   }
 }
