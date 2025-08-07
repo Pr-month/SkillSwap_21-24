@@ -21,6 +21,19 @@ export class SkillsService {
     private readonly categoryRepository: Repository<CategoryEntity>,
   ) {}
 
+  // Получение всех навыков
+  async findAll(
+    limitNumber: number,
+    offsetNumber: number,
+  ): Promise<SkillEntity[]> {
+    return this.skillRepository.find({
+      take: limitNumber,
+      skip: offsetNumber,
+      relations: ['owner', 'category'],
+      order: { id: 'desc' },
+    });
+  }
+
   // Создание нового навыка
   async createSkill(createSkillDto: CreateSkillDTO) {
     const user = await this.userRepository.findOne({
