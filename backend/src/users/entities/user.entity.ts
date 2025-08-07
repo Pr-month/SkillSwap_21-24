@@ -58,7 +58,7 @@ export class UserEntity {
   })
   role: UserRole;
 
-  @Column()
+  @Column({ nullable: true })
   refreshToken: string;
 
   @BeforeInsert()
