@@ -34,6 +34,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+
   async _generateTokens(userId: string, email: string, role: UserRole) {
     const payload = { sub: userId, email, role };
 
