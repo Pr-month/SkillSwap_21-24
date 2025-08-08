@@ -4,20 +4,17 @@ import {
   Inject,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CategoryEntity } from '../categories/entities/categories.entity';
-import { CreateUserDTO, LoginUserDTO } from './dto/user.dto';
-import { configuration } from '../config/configuration';
-import { AppConfigType } from '../config/config.type';
-import * as bcrypt from 'bcrypt';
-import { Response } from 'express';
-import { SkillEntity } from '../skills/entities/skills.entity';
-import { UserEntity } from '../users/entities/user.entity';
-import { CreateUserDTO } from './dto/user.dto';
+import { CategoryEntity } from 'src/categories/entities/categories.entity';
+import { AppConfigType } from 'src/config/config.type';
+import { configuration } from 'src/config/configuration';
+import { SkillEntity } from 'src/skills/entities/skills.entity';
+import { UserEntity } from 'src/users/entities/user.entity';
 import { UserRole } from 'src/users/enums';
+import { Repository } from 'typeorm';
+import { CreateUserDTO, LoginUserDTO } from './dto/user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -30,13 +27,11 @@ export class AuthService {
     private readonly categotyRepository: Repository<CategoryEntity>,
     @Inject(configuration.KEY)
     private readonly config: AppConfigType,
-
     private readonly jwtService: JwtService,
   ) {}
 
-
-  async _generateTokens(userId: string, email: string, role: UserRole) {
-    const payload = { sub: userId, email, role };
+  async _generateTokens({ id, email, role }: UserEntity) {
+    const payload = { sub: id, email, role };
 
     const accessToken = await this.jwtService.signAsync(payload);
 
@@ -60,11 +55,7 @@ export class AuthService {
     });
     await this.userRepository.save(user);
     // Генерим токены
-    const { accessToken, refreshToken } = await this._generateTokens(
-      user.id,
-      user.email,
-      user.role,
-    );
+    const { accessToken, refreshToken } = await this._generateTokens(user);
     // Сохраняем refresh токен в бд
     await this.userRepository.update(user.id, {
       refreshToken,
@@ -77,7 +68,6 @@ export class AuthService {
 
   async loginUser(
     userData: LoginUserDTO,
-    res: Response,
   ): Promise<{ success: boolean; accessToken: string }> {
     const { email, password } = userData;
     const user = await this.userRepository.findOne({
@@ -91,15 +81,10 @@ export class AuthService {
     if (user.password != (await bcrypt.hash(password, 10))) {
       throw new UnauthorizedException('User not found');
     }
-    const { accessToken, refreshToken } = await this._generateTokens(
-      user.id,
-      user.email,
-      user.role,
-    );
+    const { accessToken, refreshToken } = await this._generateTokens(user);
     await this.userRepository.update(user.id, {
       refreshToken,
     });
-    res.cookie('refreshToken', user.refreshToken);
     return {
       success: true,
       accessToken: accessToken,
@@ -108,7 +93,7 @@ export class AuthService {
 
   async deleterefreshToken(token: string): Promise<UserEntity> {
     const { userId, email, role } = await this.jwtService.verifyAsync<{
-      userId: string;
+      userId: number;
       email: string;
       role: UserRole;
     }>(token, {
@@ -133,30 +118,20 @@ export class AuthService {
 
   async refreshToken(
     token: string,
-    res: Response,
   ): Promise<{ success: boolean; accessToken: string }> {
     const user = await this.deleterefreshToken(token);
-    const { accessToken, refreshToken } = await this._generateTokens(
-      user.id,
-      user.email,
-      user.role,
-    );
+    const { accessToken, refreshToken } = await this._generateTokens(user);
     await this.userRepository.update(user.id, {
       refreshToken,
     });
-    res.cookie('refreshToken', user.refreshToken);
     return {
       success: true,
       accessToken: accessToken,
     };
   }
 
-  async loguotUser(
-    token: string,
-    res: Response,
-  ): Promise<{ success: boolean }> {
+  async loguotUser(token: string): Promise<{ success: boolean }> {
     await this.deleterefreshToken(token);
-    res.cookie('refreshToken', '');
     return {
       success: true,
     };

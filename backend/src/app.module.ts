@@ -32,7 +32,7 @@ import { FilesModule } from './files/files.module';
       useFactory: (config: AppConfigType) => ({
         secret: config.jwt.jwtSecret,
         signOptions: {
-          expiresIn: config.jwt.expiresIn, //Время жизни токена
+          expiresIn: config.jwt.accessExpiresIn, //Время жизни токена
         },
       }),
     }),
@@ -49,7 +49,7 @@ import { FilesModule } from './files/files.module';
     RefreshTokenStrategy,
     {
       provide: APP_FILTER,
-      useClass: AllExceptionsFilter
+      useClass: AllExceptionsFilter,
     },
   ],
   exports: [JwtStrategy, RefreshTokenStrategy],
