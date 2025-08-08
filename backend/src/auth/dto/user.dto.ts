@@ -1,9 +1,4 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsString,
-  IsUrl
-} from 'class-validator';
+import { IsEmail, IsEnum, IsString, IsUrl } from 'class-validator';
 
 import { Gender } from 'src/users/enums';
 
@@ -31,4 +26,11 @@ export class CreateUserDTO {
   // @ValidateNested({ each: true })
   // @Type(() => CreateSkillDTO)
   // skill: CreateSkillDTO;
+}
+
+export class LoginUserDTO {
+  @IsEmail()
+  email: string;
+  @IsString()
+  password: string;
 }
