@@ -10,6 +10,8 @@ import { SkillsModule } from './skills/skills.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './auth/strategies/jwt.strategy';
+import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
 
 @Module({
   imports: [
@@ -22,10 +24,10 @@ import { JwtModule } from '@nestjs/jwt';
       }),
     }),
     JwtModule.registerAsync({
+      global: true,
       inject: [configuration.KEY],
       useFactory: (config: AppConfigType) => ({
         secret: config.jwt.jwtSecret,
-        global: true,
         signOptions: {
           expiresIn: config.jwt.expiresIn, //Время жизни токена
         },
@@ -37,6 +39,7 @@ import { JwtModule } from '@nestjs/jwt';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy, RefreshTokenStrategy],
+  exports: [JwtStrategy, RefreshTokenStrategy],
 })
-export class AppModule {}
+export class AppModule { }
