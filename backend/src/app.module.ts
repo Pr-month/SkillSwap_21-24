@@ -12,6 +12,8 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './auth/strategies/jwt.strategy';
 import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/all-exception.filter';
 import { FilesModule } from './files/files.module';
 
 @Module({
@@ -41,7 +43,15 @@ import { FilesModule } from './files/files.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy, RefreshTokenStrategy],
+  providers: [
+    AppService,
+    JwtStrategy,
+    RefreshTokenStrategy,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter
+    },
+  ],
   exports: [JwtStrategy, RefreshTokenStrategy],
 })
 export class AppModule {}
