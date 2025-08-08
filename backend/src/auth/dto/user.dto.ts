@@ -32,3 +32,10 @@ export class CreateUserDTO {
   // @Type(() => CreateSkillDTO)
   // skill: CreateSkillDTO;
 }
+
+export class LoginUserDTO {
+  @IsEmail()
+  email: string;
+  @IsString()
+  password: string;
+}
