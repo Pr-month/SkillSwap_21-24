@@ -1,10 +1,19 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryEntity } from '../categories/entities/categories.entity';
-import { AppConfigType } from '../config/config.type';
+import { CreateUserDTO, LoginUserDTO } from './dto/user.dto';
 import { configuration } from '../config/configuration';
+import { AppConfigType } from '../config/config.type';
+import * as bcrypt from 'bcrypt';
+import { Response } from 'express';
 import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateUserDTO } from './dto/user.dto';
@@ -25,8 +34,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async _generateTokens(userId: number, email: string) {
-    const payload = { sub: userId, email };
+
+  async _generateTokens(userId: string, email: string, role: UserRole) {
+    const payload = { sub: userId, email, role };
 
     const accessToken = await this.jwtService.signAsync(payload);
 
@@ -53,6 +63,7 @@ export class AuthService {
     const { accessToken, refreshToken } = await this._generateTokens(
       user.id,
       user.email,
+      user.role,
     );
     // Сохраняем refresh токен в бд
     await this.userRepository.update(user.id, {
@@ -61,6 +72,93 @@ export class AuthService {
     return {
       success: true,
       accessToken: accessToken,
+    };
+  }
+
+  async loginUser(
+    userData: LoginUserDTO,
+    res: Response,
+  ): Promise<{ success: boolean; accessToken: string }> {
+    const { email, password } = userData;
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.password != (await bcrypt.hash(password, 10))) {
+      throw new UnauthorizedException('User not found');
+    }
+    const { accessToken, refreshToken } = await this._generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
+    await this.userRepository.update(user.id, {
+      refreshToken,
+    });
+    res.cookie('refreshToken', user.refreshToken);
+    return {
+      success: true,
+      accessToken: accessToken,
+    };
+  }
+
+  async deleterefreshToken(token: string): Promise<UserEntity> {
+    const { userId, email, role } = await this.jwtService.verifyAsync<{
+      userId: string;
+      email: string;
+      role: UserRole;
+    }>(token, {
+      secret: this.config.jwt.jwtSecret,
+    });
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+        email: email,
+        role: role,
+        refreshToken: token,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('Invalid or expired refresh token');
+    }
+    await this.userRepository.update(user.id, {
+      refreshToken: undefined,
+    });
+    return user;
+  }
+
+  async refreshToken(
+    token: string,
+    res: Response,
+  ): Promise<{ success: boolean; accessToken: string }> {
+    const user = await this.deleterefreshToken(token);
+    const { accessToken, refreshToken } = await this._generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
+    await this.userRepository.update(user.id, {
+      refreshToken,
+    });
+    res.cookie('refreshToken', user.refreshToken);
+    return {
+      success: true,
+      accessToken: accessToken,
+    };
+  }
+
+  async loguotUser(
+    token: string,
+    res: Response,
+  ): Promise<{ success: boolean }> {
+    await this.deleterefreshToken(token);
+    res.cookie('refreshToken', '');
+    return {
+      success: true,
     };
   }
 }
