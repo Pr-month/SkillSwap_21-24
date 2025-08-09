@@ -1,5 +1,9 @@
 import { Repository } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UserEntity } from '../users/entities/user.entity';
@@ -7,6 +11,8 @@ import { CategoryEntity } from '../categories/entities/categories.entity';
 
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO } from './dto/skill.dto';
+
+type FindAllParams = { page: number; limit: number };
 
 @Injectable()
 export class SkillsService {
@@ -22,22 +28,22 @@ export class SkillsService {
   ) {}
 
   // Получение всех навыков
-  async findAll(
-    limitNumber: number,
-    offsetNumber: number,
-  ): Promise<SkillEntity[]> {
+  async findAll({ limit, page }: FindAllParams): Promise<SkillEntity[]> {
     return this.skillRepository.find({
-      take: limitNumber,
-      skip: offsetNumber,
+      take: limit,
+      skip: (page - 1) * limit,
       relations: ['owner', 'category'],
       order: { id: 'desc' },
     });
   }
 
   // Создание нового навыка
-  async createSkill(createSkillDto: CreateSkillDTO) {
+  async createSkill(
+    createSkillDto: CreateSkillDTO,
+    userId: string,
+  ): Promise<SkillEntity> {
     const user = await this.userRepository.findOne({
-      where: { id: createSkillDto.owner },
+      where: { id: userId },
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -65,6 +71,7 @@ export class SkillsService {
   async updateSkill(
     skillId: string,
     updateSkillDto: Partial<CreateSkillDTO>,
+    userId: string,
   ): Promise<SkillEntity> {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },
@@ -74,14 +81,17 @@ export class SkillsService {
       throw new NotFoundException('Skill not found');
     }
 
-    if (updateSkillDto.owner) {
-      const user = await this.userRepository.findOne({
-        where: { id: updateSkillDto.owner },
-      });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      skill.owner = user;
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (skill.owner.id !== user.id) {
+      throw new ForbiddenException(
+        'You do not have permission to update this skill',
+      );
     }
 
     if (updateSkillDto.category) {
@@ -100,12 +110,25 @@ export class SkillsService {
   }
 
   // Удаление навыка
-  async deleteSkill(skillId: string): Promise<void> {
+  async deleteSkill(skillId: string, userId: string): Promise<void> {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },
     });
     if (!skill) {
       throw new NotFoundException('Skill not found');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (skill.owner.id !== user.id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this skill',
+      );
     }
 
     await this.skillRepository.remove(skill);

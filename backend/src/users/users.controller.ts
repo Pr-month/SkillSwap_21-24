@@ -28,7 +28,7 @@ export class UsersController {
   async getCurrentUser(
     @Request() req, // Получаем user из JWT
   ): Promise<UserEntity | null> {
-    return this.usersService.getCurrentUser(req.user.id);
+    return this.usersService.getCurrentUser(req.user.userId);
   }
 
   // Обновление текущего пользователя
@@ -38,7 +38,7 @@ export class UsersController {
     @Request() req,
     @Body() updateData: Partial<UserEntity>,
   ): Promise<UserEntity | null> {
-    return this.usersService.updateCurrentUser(req.user.id, updateData);
+    return this.usersService.updateCurrentUser(req.user.userId, updateData);
   }
 
   // Обновление пароля текущего пользователя
@@ -48,6 +48,9 @@ export class UsersController {
     @Request() req,
     @Body() updateData: { password: string },
   ): Promise<UserEntity | null> {
-    return this.usersService.updatePassword(req.user.id, updateData.password);
+    return this.usersService.updatePassword(
+      req.user.userId,
+      updateData.password,
+    );
   }
 }
