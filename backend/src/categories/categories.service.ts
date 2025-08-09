@@ -19,19 +19,6 @@ export class CategoriesService {
     });
   }
 
-  async findOne(id: number): Promise<CategoryEntity> {
-    const category = await this.categoriesRepository.findOne({
-      where: { id: id },
-      relations: ['children', 'parent'],
-    });
-
-    if (!category) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
-    }
-
-    return category;
-  }
-
   async create(createCategoryDto: CreateCategoryDto): Promise<CategoryEntity> {
     const category = this.categoriesRepository.create(createCategoryDto);
     return await this.categoriesRepository.save(category);
@@ -41,13 +28,43 @@ export class CategoriesService {
     id: number,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<CategoryEntity> {
-    await this.findOne(id);
+    // Проверяем существование категории перед обновлением
+    const existingCategory = await this.categoriesRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!existingCategory) {
+      throw new NotFoundException(`Category with ID ${id} not found`);
+    }
+
     await this.categoriesRepository.update(id, updateCategoryDto);
-    return await this.findOne(id);
+
+    // Возвращаем обновленную категорию
+    const updatedCategory = await this.categoriesRepository.findOne({
+      where: { id: id },
+      relations: ['children', 'parent'],
+    });
+
+    // Дополнительная проверка (на случай race condition)
+    if (!updatedCategory) {
+      throw new NotFoundException(
+        `Category with ID ${id} not found after update`,
+      );
+    }
+
+    return updatedCategory;
   }
 
   async remove(id: number): Promise<void> {
-    const category = await this.findOne(id);
-    await this.categoriesRepository.remove(category);
+    // Проверяем существование категории перед удалением
+    const existingCategory = await this.categoriesRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!existingCategory) {
+      throw new NotFoundException(`Category with ID ${id} not found`);
+    }
+
+    await this.categoriesRepository.remove(existingCategory);
   }
 }
