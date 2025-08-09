@@ -24,8 +24,4 @@ export class CategoryEntity {
   // Ссылка на дочерние категории (подкатегории)
   @OneToMany(() => CategoryEntity, (category) => category.parent)
   children: CategoryEntity[];
-
-  // Дополнительные поля для удобства работы
-  @Column({ nullable: true })
-  parentId: number | null;
 }
