@@ -29,14 +29,6 @@ export class CategoriesController {
     return await this.categoriesService.findAll();
   }
 
-  // 📋 Публичный маршрут - получение конкретной категории
-  @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<CategoryEntity> {
-    return await this.categoriesService.findOne(id);
-  }
-
   // ➕ Защищенный маршрут - только для админов
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
