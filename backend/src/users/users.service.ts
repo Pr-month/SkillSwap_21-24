@@ -10,7 +10,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   // Получение всех пользователей
   async findAll(): Promise<UserEntity[]> {
@@ -18,13 +18,13 @@ export class UsersService {
   }
 
   // Получение текущего пользователя
-  async getCurrentUser(id: string): Promise<UserEntity | null> {
+  async getCurrentUser(id: number): Promise<UserEntity | null> {
     return this.usersRepository.findOne({ where: { id } });
   }
 
   // Обновление текущего пользователя
   async updateCurrentUser(
-    id: string,
+    id: number,
     updateData: Partial<UserEntity>,
   ): Promise<UserEntity | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
@@ -38,7 +38,7 @@ export class UsersService {
 
   // Обновление пароля текущего пользователя
   async updatePassword(
-    id: string,
+    id: number,
     password: string,
   ): Promise<UserEntity | null> {
     const user = await this.usersRepository.findOne({ where: { id } });

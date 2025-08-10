@@ -23,3 +23,7 @@ export interface RefreshUser {
     roles: UserRole[];
     refreshToken: string;
 }
+
+export interface ReqWithUser extends Request {
+    user: JwtPayload
+}

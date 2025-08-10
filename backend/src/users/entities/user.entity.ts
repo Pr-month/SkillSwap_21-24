@@ -13,7 +13,7 @@ import { Gender, UserRole } from '../enums';
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   name: string;

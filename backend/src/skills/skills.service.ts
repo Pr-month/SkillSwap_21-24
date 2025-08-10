@@ -25,7 +25,7 @@ export class SkillsService {
 
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
-  ) {}
+  ) { }
 
   // Получение всех навыков
   async findAll({ limit, page }: FindAllParams): Promise<SkillEntity[]> {
@@ -40,7 +40,7 @@ export class SkillsService {
   // Создание нового навыка
   async createSkill(
     createSkillDto: CreateSkillDTO,
-    userId: string,
+    userId: number,
   ): Promise<SkillEntity> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -69,9 +69,9 @@ export class SkillsService {
 
   // Изменение навыка
   async updateSkill(
-    skillId: string,
+    skillId: number,
     updateSkillDto: Partial<CreateSkillDTO>,
-    userId: string,
+    userId: number,
   ): Promise<SkillEntity> {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },
@@ -110,7 +110,7 @@ export class SkillsService {
   }
 
   // Удаление навыка
-  async deleteSkill(skillId: string, userId: string): Promise<void> {
+  async deleteSkill(skillId: number, userId: number): Promise<void> {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },
     });

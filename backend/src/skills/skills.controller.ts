@@ -14,16 +14,15 @@ import {
   ValidationPipe,
   UseGuards,
 } from '@nestjs/common';
-
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO, PaginationQueryDto } from './dto/skill.dto';
+import { ReqWithUser } from 'src/auth/auth.types';
 
 @Controller('skills')
 export class SkillsController {
-  constructor(private readonly skillsService: SkillsService) {}
+  constructor(private readonly skillsService: SkillsService) { }
 
   // Получение всех навыков
   @Get()
@@ -41,9 +40,9 @@ export class SkillsController {
   @HttpCode(HttpStatus.CREATED)
   async createSkill(
     @Body() createSkillDto: CreateSkillDTO,
-    @Req() req,
+    @Req() req: ReqWithUser,
   ): Promise<SkillEntity> {
-    return this.skillsService.createSkill(createSkillDto, req.user.userId);
+    return this.skillsService.createSkill(createSkillDto, req.user.sub);
   }
 
   // Изменение навыка
@@ -51,18 +50,18 @@ export class SkillsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async updateSkill(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateSkillDto: Partial<CreateSkillDTO>,
-    @Req() req,
+    @Req() req: ReqWithUser,
   ): Promise<SkillEntity> {
-    return this.skillsService.updateSkill(id, updateSkillDto, req.user.userId);
+    return this.skillsService.updateSkill(id, updateSkillDto, req.user.sub);
   }
 
   // Удаление навыка
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteSkill(@Param('id') id: string, @Req() req): Promise<void> {
-    return this.skillsService.deleteSkill(id, req.user.userId);
+  async deleteSkill(@Param('id') id: number, @Req() req: ReqWithUser): Promise<void> {
+    return this.skillsService.deleteSkill(id, req.user.sub);
   }
 }

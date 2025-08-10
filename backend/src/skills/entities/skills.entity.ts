@@ -5,7 +5,7 @@ import { CategoryEntity } from '../../categories/entities/categories.entity';
 @Entity('skills')
 export class SkillEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   title: string;
