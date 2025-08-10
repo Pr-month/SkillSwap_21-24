@@ -25,7 +25,7 @@ export class SkillsService {
 
     @InjectRepository(CategoryEntity)
     private readonly categoryRepository: Repository<CategoryEntity>,
-  ) { }
+  ) {}
 
   // Получение всех навыков
   async findAll({ limit, page }: FindAllParams): Promise<SkillEntity[]> {

@@ -1,29 +1,29 @@
-import { UserRole } from "src/users/enums";
+import { UserRole } from 'src/users/enums';
 
 export interface JwtPayload {
-    sub: number;
-    email: string;
-    roles: UserRole[];
-    iat?: number;
-    exp?: number;
+  sub: number;
+  email: string;
+  roles: UserRole[];
+  iat?: number;
+  exp?: number;
 }
 
 export interface RefreshTokenPayload {
-    sub: number;
-    email: string;
-    roles: UserRole[];
-    refreshToken: string;
-    iat?: number;
-    exp?: number;
+  sub: number;
+  email: string;
+  roles: UserRole[];
+  refreshToken: string;
+  iat?: number;
+  exp?: number;
 }
 
 export interface RefreshUser {
-    userId: number;
-    email: string;
-    roles: UserRole[];
-    refreshToken: string;
+  userId: number;
+  email: string;
+  roles: UserRole[];
+  refreshToken: string;
 }
 
 export interface ReqWithUser extends Request {
-    user: JwtPayload
+  user: JwtPayload;
 }

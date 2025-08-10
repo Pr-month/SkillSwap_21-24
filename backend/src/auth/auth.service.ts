@@ -33,10 +33,12 @@ export class AuthService {
   async _generateTokens({ id, email, role }: UserEntity) {
     const payload = { sub: id, email, role };
 
-    const accessToken = await this.jwtService.signAsync(payload);
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.config.jwt.jwtSecret,
+    });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.config.jwt.jwtSecret,
+      secret: this.config.jwt.jwtRefreshSecret,
     });
 
     return {
@@ -68,18 +70,19 @@ export class AuthService {
 
   async loginUser(
     userData: LoginUserDTO,
-  ): Promise<{ success: boolean; accessToken: string }> {
+  ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
     const { email, password } = userData;
     const user = await this.userRepository.findOne({
       where: {
         email: email,
       },
+      select: ['id', 'email', 'password'],
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new UnauthorizedException('Incorrectly entered email address');
     }
-    if (user.password != (await bcrypt.hash(password, 10))) {
-      throw new UnauthorizedException('User not found');
+    if (await bcrypt.compare(user.password, password)) {
+      throw new UnauthorizedException('Incorrectly entered password');
     }
     const { accessToken, refreshToken } = await this._generateTokens(user);
     await this.userRepository.update(user.id, {
@@ -88,16 +91,17 @@ export class AuthService {
     return {
       success: true,
       accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 
-  async deleterefreshToken(token: string): Promise<UserEntity> {
+  async deleteRefreshToken(token: string): Promise<UserEntity> {
     const { userId, email, role } = await this.jwtService.verifyAsync<{
       userId: number;
       email: string;
       role: UserRole;
     }>(token, {
-      secret: this.config.jwt.jwtSecret,
+      secret: this.config.jwt.jwtRefreshSecret,
     });
     const user = await this.userRepository.findOne({
       where: {
@@ -111,7 +115,7 @@ export class AuthService {
       throw new NotFoundException('Invalid or expired refresh token');
     }
     await this.userRepository.update(user.id, {
-      refreshToken: undefined,
+      refreshToken: '',
     });
     return user;
   }
@@ -119,7 +123,7 @@ export class AuthService {
   async refreshToken(
     token: string,
   ): Promise<{ success: boolean; accessToken: string }> {
-    const user = await this.deleterefreshToken(token);
+    const user = await this.deleteRefreshToken(token);
     const { accessToken, refreshToken } = await this._generateTokens(user);
     await this.userRepository.update(user.id, {
       refreshToken,
@@ -131,7 +135,7 @@ export class AuthService {
   }
 
   async loguotUser(token: string): Promise<{ success: boolean }> {
-    await this.deleterefreshToken(token);
+    await this.deleteRefreshToken(token);
     return {
       success: true,
     };
