@@ -15,6 +15,8 @@ import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/all-exception.filter';
 import { FilesModule } from './files/files.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './logger/logger-winstone.config';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { FilesModule } from './files/files.module';
     CategoriesModule,
     FilesModule,
     AuthModule,
+    WinstonModule.forRoot(winstonConfig),
   ],
   controllers: [AppController],
   providers: [
