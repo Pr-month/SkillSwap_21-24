@@ -1,9 +1,27 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
 @Entity('categories')
 export class CategoryEntity {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
+
   @Column()
   name: string;
+
+  // Ссылка на родительскую категорию (основная категория)
+  @ManyToOne(() => CategoryEntity, (category) => category.children, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  parent: CategoryEntity | null;
+
+  // Ссылка на дочерние категории (подкатегории)
+  @OneToMany(() => CategoryEntity, (category) => category.parent)
+  children: CategoryEntity[];
 }
