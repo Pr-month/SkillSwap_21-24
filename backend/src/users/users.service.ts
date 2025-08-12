@@ -10,7 +10,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   // Получение всех пользователей
   async findAll(): Promise<UserEntity[]> {

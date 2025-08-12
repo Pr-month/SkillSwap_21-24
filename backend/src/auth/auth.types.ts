@@ -1,6 +1,7 @@
 import { UserRole } from 'src/users/enums';
 import { Request } from 'express';
 
+
 export interface JwtPayload {
   sub: number;
   email: string;
@@ -25,6 +26,6 @@ export interface RefreshUser {
   refreshToken: string;
 }
 
-export interface AuthRequest extends Request {
+export interface ReqWithUser extends Request {
   user: JwtPayload;
 }

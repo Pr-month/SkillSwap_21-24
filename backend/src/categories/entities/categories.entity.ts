@@ -1,10 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { SkillEntity } from '../../skills/entities/skills.entity';
 
 @Entity('categories')
 export class CategoryEntity {
@@ -24,4 +19,7 @@ export class CategoryEntity {
   // Ссылка на дочерние категории (подкатегории)
   @OneToMany(() => CategoryEntity, (category) => category.parent)
   children: CategoryEntity[];
+
+  @OneToMany(() => SkillEntity, (skill) => skill.category)
+  skills: SkillEntity[];
 }
