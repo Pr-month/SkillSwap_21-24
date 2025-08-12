@@ -1,12 +1,33 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { CreateUserDTO } from './dto/user.dto';
+import { CreateUserDTO, LoginUserDTO } from './dto/user.dto';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { RefreshTokenPayload } from './auth.types';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  @Post('register') // а этот для запроса POST /films
-  createOrder(@Body() userData: CreateUserDTO) {
+  @Post('register')
+  createUser(@Body() userData: CreateUserDTO) {
     return this.authService.createUser(userData);
+  }
+  @Post('login')
+  loginUser(@Body() userData: LoginUserDTO) {
+    return this.authService.loginUser(userData);
+  }
+  @UseGuards(RefreshTokenGuard)
+  @Post('logout')
+  logoutUser(@Req() request: Request) {
+    const user = request.user as RefreshTokenPayload;
+    const refreshToken = user.refreshToken;
+    return this.authService.loguotUser(refreshToken);
+  }
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh')
+  refreshToken(@Req() request: Request) {
+    const user = request.user as RefreshTokenPayload;
+    const refreshToken = user.refreshToken;
+    return this.authService.refreshToken(refreshToken);
   }
 }

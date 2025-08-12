@@ -1,4 +1,12 @@
-import { IsString, IsUrl, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateSkillDTO {
   @IsString()
@@ -6,8 +14,22 @@ export class CreateSkillDTO {
   @IsString()
   description: string;
   @IsString()
-  category: string;
+  category: number;
   @IsArray()
-  @IsUrl()
   images: string[];
+}
+
+export class PaginationQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit: number = 20;
 }

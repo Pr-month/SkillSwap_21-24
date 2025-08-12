@@ -12,9 +12,15 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './auth/strategies/jwt.strategy';
 import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/all-exception.filter';
+import { FilesModule } from './files/files.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './logger/logger-winstone.config';
 
 @Module({
   imports: [
+    WinstonModule.forRoot(winstonConfig),
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -29,17 +35,26 @@ import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
       useFactory: (config: AppConfigType) => ({
         secret: config.jwt.jwtSecret,
         signOptions: {
-          expiresIn: config.jwt.expiresIn, //Время жизни токена
+          expiresIn: config.jwt.accessExpiresIn, //Время жизни токена
         },
       }),
     }),
     UsersModule,
     SkillsModule,
     CategoriesModule,
+    FilesModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy, RefreshTokenStrategy],
+  providers: [
+    AppService,
+    JwtStrategy,
+    RefreshTokenStrategy,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
   exports: [JwtStrategy, RefreshTokenStrategy],
 })
-export class AppModule { }
+export class AppModule {}
