@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; //TODO: Расскомментировать после реализации JWT
+import { AuthRequest } from '../auth/auth.types';
 
 import { UsersService } from './users.service';
 import { UserEntity } from './entities/user.entity';
@@ -26,7 +27,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getCurrentUser(
-    @Request() req, // Получаем user из JWT
+    @Request() req: AuthRequest, // Получаем user из JWT
   ): Promise<UserEntity | null> {
     return this.usersService.getCurrentUser(req.user.userId);
   }
@@ -35,7 +36,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateCurrentUser(
-    @Request() req,
+    @Request() req: AuthRequest,
     @Body() updateData: Partial<UserEntity>,
   ): Promise<UserEntity | null> {
     return this.usersService.updateCurrentUser(req.user.userId, updateData);
@@ -45,7 +46,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('me/password')
   async updatePassword(
-    @Request() req,
+    @Request() req: AuthRequest,
     @Body() updateData: { password: string },
   ): Promise<UserEntity | null> {
     return this.usersService.updatePassword(

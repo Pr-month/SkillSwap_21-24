@@ -7,6 +7,7 @@ export const configuration = registerAs('APP_CONFIG', () => ({
   jwt: {
     jwtSecret: process.env.JWT_SECRET || 'SECRET_KEY',
     jwtRefreshSecret: process.env.REFRESH_TOKEN_SECRET || 'REFRESH_SECRET_KEY',
-    expiresIn: process.env.EXPRIRES_IN || '15m',
+    accessExpiresIn: process.env.AUTH_ACCESS_TOKEN_EXPIRY || '15m',
+    refreshExpiresIn: process.env.AUTH_REFRESH_TOKEN_EXPIRY || '7d',
   },
 }));
