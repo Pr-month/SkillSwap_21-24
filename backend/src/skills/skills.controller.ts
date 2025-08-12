@@ -22,7 +22,7 @@ import { ReqWithUser } from 'src/auth/auth.types';
 
 @Controller('skills')
 export class SkillsController {
-  constructor(private readonly skillsService: SkillsService) { }
+  constructor(private readonly skillsService: SkillsService) {}
 
   // Получение всех навыков
   @Get()
@@ -61,7 +61,10 @@ export class SkillsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteSkill(@Param('id') id: number, @Req() req: ReqWithUser): Promise<void> {
+  async deleteSkill(
+    @Param('id') id: number,
+    @Req() req: ReqWithUser,
+  ): Promise<void> {
     return this.skillsService.deleteSkill(id, req.user.sub);
   }
 }

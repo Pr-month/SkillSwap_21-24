@@ -42,4 +42,4 @@ import { RefreshTokenStrategy } from './auth/strategies/refresh-token.strategy';
   providers: [AppService, JwtStrategy, RefreshTokenStrategy],
   exports: [JwtStrategy, RefreshTokenStrategy],
 })
-export class AppModule { }
+export class AppModule {}
