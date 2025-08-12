@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; //TODO: Расскомментировать после реализации JWT
-import { AuthRequest } from '../auth/auth.types';
 
 import { UsersService } from './users.service';
 import { UserEntity } from './entities/user.entity';
+import { ReqWithUser } from 'src/auth/auth.types';
 
 @Controller('users')
 export class UsersController {
@@ -27,31 +27,28 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getCurrentUser(
-    @Request() req: AuthRequest, // Получаем user из JWT
+    @Request() req: ReqWithUser, // Получаем user из JWT
   ): Promise<UserEntity | null> {
-    return this.usersService.getCurrentUser(req.user.userId);
+    return this.usersService.getCurrentUser(req.user.sub);
   }
 
   // Обновление текущего пользователя
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateCurrentUser(
-    @Request() req: AuthRequest,
+    @Request() req: ReqWithUser,
     @Body() updateData: Partial<UserEntity>,
   ): Promise<UserEntity | null> {
-    return this.usersService.updateCurrentUser(req.user.userId, updateData);
+    return this.usersService.updateCurrentUser(req.user.sub, updateData);
   }
 
   // Обновление пароля текущего пользователя
   @UseGuards(JwtAuthGuard)
   @Patch('me/password')
   async updatePassword(
-    @Request() req: AuthRequest,
+    @Request() req: ReqWithUser,
     @Body() updateData: { password: string },
   ): Promise<UserEntity | null> {
-    return this.usersService.updatePassword(
-      req.user.userId,
-      updateData.password,
-    );
+    return this.usersService.updatePassword(req.user.sub, updateData.password);
   }
 }

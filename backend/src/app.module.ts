@@ -44,7 +44,6 @@ import { winstonConfig } from './logger/logger-winstone.config';
     CategoriesModule,
     FilesModule,
     AuthModule,
-    
   ],
   controllers: [AppController],
   providers: [

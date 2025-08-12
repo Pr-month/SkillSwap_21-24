@@ -14,7 +14,7 @@ export class CreateSkillDTO {
   @IsString()
   description: string;
   @IsString()
-  category: string;
+  category: number;
   @IsArray()
   images: string[];
 }

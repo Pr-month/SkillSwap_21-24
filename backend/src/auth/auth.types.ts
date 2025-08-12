@@ -1,7 +1,6 @@
 import { UserRole } from 'src/users/enums';
 import { Request } from 'express';
 
-
 export interface JwtPayload {
   sub: number;
   email: string;
