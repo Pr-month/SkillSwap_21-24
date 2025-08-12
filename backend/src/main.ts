@@ -11,10 +11,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
   const config = configService.get<AppConfigType>('APP_CONFIG')!;
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  app.useLogger(logger);
   app.useGlobalPipes(new ValidationPipe());
   app.useStaticAssets(join(__dirname, '..', 'public'));
   await app.listen(config.port);
-  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-  app.useLogger(logger);
 }
 void bootstrap();

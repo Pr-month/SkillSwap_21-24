@@ -20,6 +20,7 @@ import { winstonConfig } from './logger/logger-winstone.config';
 
 @Module({
   imports: [
+    WinstonModule.forRoot(winstonConfig),
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -43,7 +44,7 @@ import { winstonConfig } from './logger/logger-winstone.config';
     CategoriesModule,
     FilesModule,
     AuthModule,
-    WinstonModule.forRoot(winstonConfig),
+    
   ],
   controllers: [AppController],
   providers: [
