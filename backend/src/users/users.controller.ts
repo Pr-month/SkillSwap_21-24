@@ -7,11 +7,12 @@ import {
   Request,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; //TODO: Расскомментировать после реализации JWT
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ReqWithUser } from '../auth/auth.types';
 
 import { UsersService } from './users.service';
 import { UserEntity } from './entities/user.entity';
-import { ReqWithUser } from 'src/auth/auth.types';
+import { ResponceUserDTO } from './dto/user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -19,7 +20,7 @@ export class UsersController {
 
   // Получение всех пользователей
   @Get()
-  async findAll(): Promise<UserEntity[]> {
+  async findAll(): Promise<ResponceUserDTO[]> {
     return this.usersService.findAll();
   }
 
@@ -27,8 +28,8 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getCurrentUser(
-    @Request() req: ReqWithUser, // Получаем user из JWT
-  ): Promise<UserEntity | null> {
+    @Request() req: ReqWithUser,
+  ): Promise<ResponceUserDTO | null> {
     return this.usersService.getCurrentUser(req.user.sub);
   }
 
@@ -38,7 +39,7 @@ export class UsersController {
   async updateCurrentUser(
     @Request() req: ReqWithUser,
     @Body() updateData: Partial<UserEntity>,
-  ): Promise<UserEntity | null> {
+  ): Promise<ResponceUserDTO | null> {
     return this.usersService.updateCurrentUser(req.user.sub, updateData);
   }
 
@@ -48,7 +49,7 @@ export class UsersController {
   async updatePassword(
     @Request() req: ReqWithUser,
     @Body() updateData: { password: string },
-  ): Promise<UserEntity | null> {
+  ): Promise<ResponceUserDTO | null> {
     return this.usersService.updatePassword(req.user.sub, updateData.password);
   }
 }

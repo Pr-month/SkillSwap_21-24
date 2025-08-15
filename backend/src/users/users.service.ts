@@ -1,9 +1,15 @@
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UserEntity } from './entities/user.entity';
+import { ResponceUserDTO } from './dto/user.dto';
+
+const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
+  return plainToInstance(ResponceUserDTO, user);
+};
 
 @Injectable()
 export class UsersService {
@@ -13,40 +19,43 @@ export class UsersService {
   ) {}
 
   // Получение всех пользователей
-  async findAll(): Promise<UserEntity[]> {
-    return this.usersRepository.find();
+  async findAll(): Promise<ResponceUserDTO[]> {
+    const users = await this.usersRepository.find();
+    return users.map(toResponseUserDTO);
   }
 
   // Получение текущего пользователя
-  async getCurrentUser(id: number): Promise<UserEntity | null> {
-    return this.usersRepository.findOne({ where: { id } });
+  async getCurrentUser(id: number): Promise<ResponceUserDTO | null> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    return user ? toResponseUserDTO(user) : null;
   }
 
   // Обновление текущего пользователя
   async updateCurrentUser(
     id: number,
     updateData: Partial<UserEntity>,
-  ): Promise<UserEntity | null> {
+  ): Promise<ResponceUserDTO | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       return null;
     }
     Object.assign(user, updateData);
-
-    return this.usersRepository.save(user);
+    const updatedUser = await this.usersRepository.save(user);
+    return toResponseUserDTO(updatedUser);
   }
 
   // Обновление пароля текущего пользователя
   async updatePassword(
     id: number,
     password: string,
-  ): Promise<UserEntity | null> {
+  ): Promise<ResponceUserDTO | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       return null;
     }
     user.password = await bcrypt.hash(password, 10);
 
-    return this.usersRepository.save(user);
+    const updatedUser = await this.usersRepository.save(user);
+    return toResponseUserDTO(updatedUser);
   }
 }
