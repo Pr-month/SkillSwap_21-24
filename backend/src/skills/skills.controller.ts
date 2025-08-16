@@ -17,10 +17,15 @@ import {
 
 import { ReqWithUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+//import { RolesGuard } from '../auth/guards/roles.guard';
+//import { Roles } from '../auth/decorators/roles.decorator';
+//import { UserRole } from '../users/enums';
 
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO, PaginationQueryDto } from './dto/skill.dto';
+
+export type Paginated<T> = { data: T[]; page: number; totalPages: number };
 
 @Controller('skills')
 export class SkillsController {
@@ -32,7 +37,7 @@ export class SkillsController {
   @HttpCode(HttpStatus.OK)
   async getAllSkills(
     @Query() { page, limit }: PaginationQueryDto,
-  ): Promise<SkillEntity[]> {
+  ): Promise<Paginated<SkillEntity>> {
     return this.skillsService.findAll({ limit, page });
   }
 

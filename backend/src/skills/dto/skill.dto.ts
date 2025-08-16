@@ -9,14 +9,10 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateSkillDTO {
-  @IsString()
-  title: string;
-  @IsString()
-  description: string;
-  @IsString()
-  category: number;
-  @IsArray()
-  images: string[];
+  @IsString() title: string;
+  @IsString() description: string;
+  @IsString() category: number;
+  @IsArray() images: string[];
 }
 
 export class PaginationQueryDto {

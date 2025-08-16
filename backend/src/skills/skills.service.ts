@@ -11,6 +11,7 @@ import { CategoryEntity } from '../categories/entities/categories.entity';
 
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO } from './dto/skill.dto';
+import { Paginated } from './skills.controller';
 
 type FindAllParams = { page: number; limit: number };
 
@@ -28,13 +29,24 @@ export class SkillsService {
   ) {}
 
   // Получение всех навыков
-  async findAll({ limit, page }: FindAllParams): Promise<SkillEntity[]> {
-    return this.skillRepository.find({
+  async findAll({
+    limit,
+    page,
+  }: FindAllParams): Promise<Paginated<SkillEntity>> {
+    const [skills, total] = await this.skillRepository.findAndCount({
       take: limit,
       skip: (page - 1) * limit,
       relations: ['owner', 'category'],
       order: { id: 'desc' },
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > totalPages && totalPages !== 0) {
+      throw new NotFoundException('Page not found');
+    }
+
+    return { data: skills, page, totalPages };
   }
 
   // Создание нового навыка
