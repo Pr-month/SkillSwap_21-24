@@ -5,6 +5,9 @@ import {
   Patch,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
+  Param,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,6 +23,7 @@ export class UsersController {
 
   // Получение всех пользователей
   @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll(): Promise<ResponceUserDTO[]> {
     return this.usersService.findAll();
   }
@@ -27,6 +31,7 @@ export class UsersController {
   // Получение текущего пользователя
   @UseGuards(JwtAuthGuard)
   @Get('me')
+  @HttpCode(HttpStatus.OK)
   async getCurrentUser(
     @Request() req: ReqWithUser,
   ): Promise<ResponceUserDTO | null> {
@@ -51,5 +56,13 @@ export class UsersController {
     @Body() updateData: { password: string },
   ): Promise<ResponceUserDTO | null> {
     return this.usersService.updatePassword(req.user.sub, updateData.password);
+  }
+
+  // Получение данных пользователя по ID
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getUserById(@Param('id') id: number): Promise<ResponceUserDTO | null> {
+    return this.usersService.getUserById(id);
   }
 }

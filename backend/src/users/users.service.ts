@@ -58,4 +58,10 @@ export class UsersService {
     const updatedUser = await this.usersRepository.save(user);
     return toResponseUserDTO(updatedUser);
   }
+
+  // Получение данных пользователя по ID
+  async getUserById(id: number): Promise<ResponceUserDTO | null> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    return user ? toResponseUserDTO(user) : null;
+  }
 }
