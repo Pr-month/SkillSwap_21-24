@@ -17,6 +17,7 @@ import { AllExceptionsFilter } from './common/all-exception.filter';
 import { FilesModule } from './files/files.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/logger-winstone.config';
+import { RequestsModule } from './requests/requests.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { winstonConfig } from './logger/logger-winstone.config';
     CategoriesModule,
     FilesModule,
     AuthModule,
+    RequestsModule,
   ],
   controllers: [AppController],
   providers: [
