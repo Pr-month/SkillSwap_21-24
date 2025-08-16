@@ -52,9 +52,18 @@ export class AuthService {
   async createUser(
     userData: CreateUserDTO,
   ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
+    const category = await this.categotyRepository.findOne({
+      where: {
+        id: userData.category,
+      },
+    });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
     // Создаем пользователя
     const user = this.userRepository.create({
       ...userData,
+      wantToLearn: [category],
       role: UserRole.USER,
     });
     await this.userRepository.save(user);
