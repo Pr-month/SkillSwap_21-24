@@ -1,11 +1,12 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsEnum, IsString, IsUrl } from 'class-validator';
 
-import { Gender, UserRole } from 'src/users/enums';
+import { Gender, UserRole } from '../enums';
 
 export class CreateUserDTO {
   @IsString() name: string;
   @IsEmail() email: string;
+  @IsEnum(UserRole) role: UserRole;
   @IsString() password: string;
   @IsString() about: string;
   @IsString() birthdate: string;

@@ -14,11 +14,13 @@ import {
   ValidationPipe,
   UseGuards,
 } from '@nestjs/common';
+
+import { ReqWithUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO, PaginationQueryDto } from './dto/skill.dto';
-import { ReqWithUser } from 'src/auth/auth.types';
 
 @Controller('skills')
 export class SkillsController {

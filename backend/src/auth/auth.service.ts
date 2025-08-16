@@ -81,7 +81,8 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Incorrectly entered email address');
     }
-    if (await bcrypt.compare(user.password, password)) {
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
       throw new UnauthorizedException('Incorrectly entered password');
     }
     const { accessToken, refreshToken } = await this._generateTokens(user);
