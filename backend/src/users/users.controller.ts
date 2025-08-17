@@ -5,6 +5,8 @@ import {
   Patch,
   UseGuards,
   Request,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; //TODO: Расскомментировать после реализации JWT
@@ -50,5 +52,13 @@ export class UsersController {
     @Body() updateData: { password: string },
   ): Promise<UserEntity | null> {
     return this.usersService.updatePassword(req.user.sub, updateData.password);
+  }
+
+  // Получение пользователей по ID навыка
+  @Get('by-skill/:id')
+  async findUsersBySkillId(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UserEntity[]> {
+    return this.usersService.findUsersBySkillId(id);
   }
 }
