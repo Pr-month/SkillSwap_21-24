@@ -11,11 +11,11 @@ async function seed() {
 
   const userRepo = dataSource.getRepository(UserEntity);
 
-  const testUsers = userRepo.create([
+  const adminUser = userRepo.create([
     {
       name: 'admin',
       email: 'admin@mail.ru',
-      password: '$2b$10$ff6zl.RwHX9hWkE5nnEzI.WvuXxrZ8jgiA790yOwnUcvJ57sJCp.6',
+      password: 'admin',
       about: 'administrator',
       birthdate: new Date('2000-01-01'),
       city: 'Moscow',
@@ -26,7 +26,7 @@ async function seed() {
     },
   ]);
 
-  await userRepo.save(testUsers);
+  await userRepo.save(adminUser);
   console.log('✅ "admin" user created');
   await dataSource.destroy();
 }

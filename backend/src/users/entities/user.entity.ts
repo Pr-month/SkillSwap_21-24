@@ -6,6 +6,8 @@ import {
   Column,
   OneToMany,
   BeforeInsert,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Gender, UserRole } from '../enums';
@@ -48,7 +50,12 @@ export class UserEntity {
   @OneToMany(() => CategoryEntity, (category) => category.id)
   wantToLearn: CategoryEntity[];
 
-  @OneToMany(() => SkillEntity, (skill) => skill.id)
+  @ManyToMany(() => SkillEntity, { cascade: false })
+  @JoinTable({
+    name: 'user_favorite_skills',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'skill_id', referencedColumnName: 'id' },
+  })
   favoriteSkills: SkillEntity[];
 
   @Column({

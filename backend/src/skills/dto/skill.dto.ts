@@ -11,21 +11,12 @@ import { Type } from 'class-transformer';
 export class CreateSkillDTO {
   @IsString() title: string;
   @IsString() description: string;
-  @IsString() category: number;
+  @Type(() => Number) @IsInt() @Min(1) category: number;
   @IsArray() images: string[];
 }
 
 export class PaginationQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit: number = 20;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page: number = 1;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit: number =
+    20;
 }

@@ -1,6 +1,8 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsEnum, IsString, IsUrl } from 'class-validator';
 
+import { SkillEntity } from '../../skills/entities/skills.entity';
+
 import { Gender, UserRole } from '../enums';
 
 export class CreateUserDTO {
@@ -26,4 +28,6 @@ export class ResponceUserDTO {
   @Expose() city: string;
   @Expose() gender: Gender;
   @Expose() avatar: string;
+
+  @Expose() favoriteSkills: SkillEntity[];
 }

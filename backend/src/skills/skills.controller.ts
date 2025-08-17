@@ -13,6 +13,7 @@ import {
   Req,
   ValidationPipe,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { ReqWithUser } from '../auth/auth.types';
@@ -57,7 +58,7 @@ export class SkillsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async updateSkill(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateSkillDto: Partial<CreateSkillDTO>,
     @Req() req: ReqWithUser,
   ): Promise<SkillEntity> {
@@ -69,9 +70,31 @@ export class SkillsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSkill(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Req() req: ReqWithUser,
   ): Promise<void> {
     return this.skillsService.deleteSkill(id, req.user.sub);
+  }
+
+  // Добавление навыка в избранное
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async addSkillToFavorites(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: ReqWithUser,
+  ): Promise<void> {
+    return this.skillsService.addSkillToFavorites(id, req.user.sub);
+  }
+
+  // Удаление навыка из избранного
+  @Delete(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeSkillFromFavorites(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: ReqWithUser,
+  ): Promise<void> {
+    return this.skillsService.removeSkillFromFavorites(id, req.user.sub);
   }
 }

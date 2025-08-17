@@ -20,13 +20,18 @@ export class UsersService {
 
   // Получение всех пользователей
   async findAll(): Promise<ResponceUserDTO[]> {
-    const users = await this.usersRepository.find();
+    const users = await this.usersRepository.find({
+      relations: ['favoriteSkills'],
+    });
     return users.map(toResponseUserDTO);
   }
 
   // Получение текущего пользователя
   async getCurrentUser(id: number): Promise<ResponceUserDTO | null> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['favoriteSkills'],
+    });
     return user ? toResponseUserDTO(user) : null;
   }
 
