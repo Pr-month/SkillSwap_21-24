@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Gender, UserRole } from '../enums';
+import { RequestEntity } from '../../requests/entities/request.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -72,4 +73,10 @@ export class UserEntity {
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
   }
+
+  @OneToMany(() => RequestEntity, (request) => request.sender)
+  sentRequests: RequestEntity[];
+
+  @OneToMany(() => RequestEntity, (request) => request.receiver)
+  receivedRequests: RequestEntity[];
 }

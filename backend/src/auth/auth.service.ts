@@ -35,10 +35,12 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.config.jwt.jwtSecret,
+      expiresIn: this.config.jwt.accessExpiresIn,
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.config.jwt.jwtRefreshSecret,
+      expiresIn: this.config.jwt.refreshExpiresIn,
     });
 
     return {
@@ -49,10 +51,19 @@ export class AuthService {
 
   async createUser(
     userData: CreateUserDTO,
-  ): Promise<{ success: boolean; accessToken: string }> {
+  ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
+    const category = await this.categotyRepository.findOne({
+      where: {
+        id: userData.category,
+      },
+    });
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
     // Создаем пользователя
     const user = this.userRepository.create({
       ...userData,
+      wantToLearn: [category],
       role: UserRole.USER,
     });
     await this.userRepository.save(user);
@@ -65,6 +76,7 @@ export class AuthService {
     return {
       success: true,
       accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 
@@ -123,7 +135,7 @@ export class AuthService {
 
   async refreshToken(
     token: string,
-  ): Promise<{ success: boolean; accessToken: string }> {
+  ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
     const user = await this.deleteRefreshToken(token);
     const { accessToken, refreshToken } = await this._generateTokens(user);
     await this.userRepository.update(user.id, {
@@ -132,6 +144,7 @@ export class AuthService {
     return {
       success: true,
       accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 

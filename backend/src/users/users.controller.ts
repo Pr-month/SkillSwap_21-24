@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -64,5 +65,12 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async getUserById(@Param('id') id: number): Promise<ResponceUserDTO | null> {
     return this.usersService.getUserById(id);
+  }
+  // Получение пользователей по ID навыка
+  @Get('by-skill/:id')
+  async findUsersBySkillId(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UserEntity[]> {
+    return this.usersService.findUsersBySkillId(id);
   }
 }
