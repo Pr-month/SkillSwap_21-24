@@ -13,12 +13,20 @@ import {
   Req,
   ValidationPipe,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
+
+import { ReqWithUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+//import { RolesGuard } from '../auth/guards/roles.guard';
+//import { Roles } from '../auth/decorators/roles.decorator';
+//import { UserRole } from '../users/enums';
+
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO, PaginationQueryDto } from './dto/skill.dto';
-import { ReqWithUser } from 'src/auth/auth.types';
+
+export type Paginated<T> = { data: T[]; page: number; totalPages: number };
 
 @Controller('skills')
 export class SkillsController {
@@ -30,7 +38,7 @@ export class SkillsController {
   @HttpCode(HttpStatus.OK)
   async getAllSkills(
     @Query() { page, limit }: PaginationQueryDto,
-  ): Promise<SkillEntity[]> {
+  ): Promise<Paginated<SkillEntity>> {
     return this.skillsService.findAll({ limit, page });
   }
 
@@ -50,7 +58,7 @@ export class SkillsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async updateSkill(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateSkillDto: Partial<CreateSkillDTO>,
     @Req() req: ReqWithUser,
   ): Promise<SkillEntity> {
@@ -62,9 +70,31 @@ export class SkillsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSkill(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Req() req: ReqWithUser,
   ): Promise<void> {
     return this.skillsService.deleteSkill(id, req.user.sub);
+  }
+
+  // Добавление навыка в избранное
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async addSkillToFavorites(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: ReqWithUser,
+  ): Promise<void> {
+    return this.skillsService.addSkillToFavorites(id, req.user.sub);
+  }
+
+  // Удаление навыка из избранного
+  @Delete(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeSkillFromFavorites(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: ReqWithUser,
+  ): Promise<void> {
+    return this.skillsService.removeSkillFromFavorites(id, req.user.sub);
   }
 }

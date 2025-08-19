@@ -6,9 +6,12 @@ import {
   Column,
   OneToMany,
   BeforeInsert,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Gender, UserRole } from '../enums';
+import { RequestEntity } from '../../requests/entities/request.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -45,10 +48,20 @@ export class UserEntity {
   @OneToMany(() => SkillEntity, (skill) => skill.owner)
   skills: SkillEntity[];
 
-  @OneToMany(() => CategoryEntity, (category) => category.id)
+  @ManyToMany(() => CategoryEntity, { cascade: true })
+  @JoinTable({
+    name: 'user_want_to_learn',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
+  })
   wantToLearn: CategoryEntity[];
 
-  @OneToMany(() => SkillEntity, (skill) => skill.id)
+  @ManyToMany(() => SkillEntity, { cascade: false })
+  @JoinTable({
+    name: 'user_favorite_skills',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'skill_id', referencedColumnName: 'id' },
+  })
   favoriteSkills: SkillEntity[];
 
   @Column({
@@ -58,11 +71,17 @@ export class UserEntity {
   })
   role: UserRole;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   refreshToken: string;
 
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
   }
+
+  @OneToMany(() => RequestEntity, (request) => request.sender)
+  sentRequests: RequestEntity[];
+
+  @OneToMany(() => RequestEntity, (request) => request.receiver)
+  receivedRequests: RequestEntity[];
 }
