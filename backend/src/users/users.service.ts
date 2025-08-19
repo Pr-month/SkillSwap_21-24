@@ -1,17 +1,16 @@
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 
-import { UserEntity } from './entities/user.entity';
+import { SkillEntity } from '../skills/entities/skills.entity';
 import { ResponceUserDTO } from './dto/user.dto';
+import { UserEntity } from './entities/user.entity';
 
 const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
   return plainToInstance(ResponceUserDTO, user);
 };
-import { SkillEntity } from '../skills/entities/skills.entity';
-import { CategoryEntity } from '../categories/entities/categories.entity';
 
 @Injectable()
 export class UsersService {
