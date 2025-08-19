@@ -20,8 +20,6 @@ export class UsersService {
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(SkillEntity)
     private readonly skillsRepository: Repository<SkillEntity>,
-    @InjectRepository(CategoryEntity)
-    private readonly categoriesRepository: Repository<CategoryEntity>,
   ) {}
 
   // Получение всех пользователей

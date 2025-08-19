@@ -48,7 +48,12 @@ export class UserEntity {
   @OneToMany(() => SkillEntity, (skill) => skill.owner)
   skills: SkillEntity[];
 
-  @OneToMany(() => CategoryEntity, (category) => category.id)
+  @ManyToMany(() => CategoryEntity, { cascade: true })
+  @JoinTable({
+    name: 'user_want_to_learn',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
+  })
   wantToLearn: CategoryEntity[];
 
   @ManyToMany(() => SkillEntity, { cascade: false })
