@@ -56,12 +56,59 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  // Добавление навыка в избранное
+  async addSkillToFavorites(userId: number, skillId: number): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const skill = await this.skillsRepository.findOne({
+      where: { id: skillId },
+    });
+
+    if (!skill) {
+      throw new Error('Skill not found');
+    }
+
+    // Проверяем, не добавлен ли уже навык в избранное
+    if (!user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
+      user.favoriteSkills.push(skill);
+      await this.usersRepository.save(user);
+    }
+  }
+
+  // Удаление навыка из избранного
+  async removeSkillFromFavorites(
+    userId: number,
+    skillId: number,
+  ): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Фильтруем массив favoriteSkills, исключая навык с указанным ID
+    user.favoriteSkills = user.favoriteSkills.filter(
+      (skill) => skill.id !== skillId,
+    );
+    await this.usersRepository.save(user);
+  }
+
   // Получение пользователей по ID навыка
   async findUsersBySkillId(skillId: number): Promise<UserEntity[]> {
     // Найти навык по ID
     const skill = await this.skillsRepository.findOne({
       where: { id: skillId },
-      relations: ['category'],
+      relations: ['category', 'owner'],
     });
 
     if (!skill) {
