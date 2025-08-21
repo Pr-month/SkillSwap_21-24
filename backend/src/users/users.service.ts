@@ -67,13 +67,9 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const skill = await this.skillsRepository.findOne({
+    const skill = await this.skillsRepository.findOneOrFail({
       where: { id: skillId },
     });
-
-    if (!skill) {
-      throw new NotFoundException('Skill not found');
-    }
 
     // Проверяем, не добавлен ли уже навык в избранное
     if (!user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
@@ -97,13 +93,9 @@ export class UsersService {
     }
 
     // Проверяем, существует ли навык
-    const skill = await this.skillsRepository.findOne({
+    await this.skillsRepository.findOneOrFail({
       where: { id: skillId },
     });
-
-    if (!skill) {
-      throw new NotFoundException('Skill not found');
-    }
 
     // Фильтруем массив favoriteSkills, исключая навык с указанным ID
     user.favoriteSkills = user.favoriteSkills.filter(
