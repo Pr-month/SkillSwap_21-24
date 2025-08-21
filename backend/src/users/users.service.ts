@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { UserEntity } from './entities/user.entity';
@@ -64,7 +64,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const skill = await this.skillsRepository.findOne({
@@ -72,7 +72,7 @@ export class UsersService {
     });
 
     if (!skill) {
-      throw new Error('Skill not found');
+      throw new NotFoundException('Skill not found');
     }
 
     // Проверяем, не добавлен ли уже навык в избранное
@@ -93,12 +93,21 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
+    }
+
+    // Проверяем, существует ли навык
+    const skill = await this.skillsRepository.findOne({
+      where: { id: skillId },
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
     }
 
     // Фильтруем массив favoriteSkills, исключая навык с указанным ID
     user.favoriteSkills = user.favoriteSkills.filter(
-      (skill) => skill.id !== skillId,
+      (favSkill) => favSkill.id !== skillId,
     );
     await this.usersRepository.save(user);
   }
