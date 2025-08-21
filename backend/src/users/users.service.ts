@@ -1,11 +1,16 @@
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 
-import { UserEntity } from './entities/user.entity';
 import { SkillEntity } from '../skills/entities/skills.entity';
-import { CategoryEntity } from '../categories/entities/categories.entity';
+import { ResponceUserDTO } from './dto/user.dto';
+import { UserEntity } from './entities/user.entity';
+
+const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
+  return plainToInstance(ResponceUserDTO, user);
+};
 
 @Injectable()
 export class UsersService {
@@ -14,46 +19,58 @@ export class UsersService {
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(SkillEntity)
     private readonly skillsRepository: Repository<SkillEntity>,
-    @InjectRepository(CategoryEntity)
-    private readonly categoriesRepository: Repository<CategoryEntity>,
   ) {}
 
   // Получение всех пользователей
-  async findAll(): Promise<UserEntity[]> {
-    return this.usersRepository.find();
+  async findAll(): Promise<ResponceUserDTO[]> {
+    const users = await this.usersRepository.find({
+      relations: ['favoriteSkills'],
+    });
+    return users.map(toResponseUserDTO);
   }
 
   // Получение текущего пользователя
-  async getCurrentUser(id: number): Promise<UserEntity | null> {
-    return this.usersRepository.findOne({ where: { id } });
+  async getCurrentUser(id: number): Promise<ResponceUserDTO | null> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['favoriteSkills'],
+    });
+    return user ? toResponseUserDTO(user) : null;
   }
 
   // Обновление текущего пользователя
   async updateCurrentUser(
     id: number,
     updateData: Partial<UserEntity>,
-  ): Promise<UserEntity | null> {
+  ): Promise<ResponceUserDTO | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       return null;
     }
     Object.assign(user, updateData);
-
-    return this.usersRepository.save(user);
+    const updatedUser = await this.usersRepository.save(user);
+    return toResponseUserDTO(updatedUser);
   }
 
   // Обновление пароля текущего пользователя
   async updatePassword(
     id: number,
     password: string,
-  ): Promise<UserEntity | null> {
+  ): Promise<ResponceUserDTO | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       return null;
     }
     user.password = await bcrypt.hash(password, 10);
 
-    return this.usersRepository.save(user);
+    const updatedUser = await this.usersRepository.save(user);
+    return toResponseUserDTO(updatedUser);
+  }
+
+  // Получение данных пользователя по ID
+  async getUserById(id: number): Promise<ResponceUserDTO | null> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    return user ? toResponseUserDTO(user) : null;
   }
 
   // Добавление навыка в избранное

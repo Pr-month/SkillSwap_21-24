@@ -18,6 +18,7 @@ import { FilesModule } from './files/files.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/logger-winstone.config';
 import { RequestsModule } from './requests/requests.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { RequestsModule } from './requests/requests.module';
     FilesModule,
     AuthModule,
     RequestsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

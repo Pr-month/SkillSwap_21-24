@@ -1,3 +1,6 @@
+import { RequestStatus } from '../../common/constants';
+import { SkillEntity } from '../../skills/entities/skills.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -6,9 +9,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { RequestStatus } from '../../common/constants';
-import { SkillEntity } from '../../skills/entities/skills.entity';
-import { UserEntity } from '../../users/entities/user.entity';
 
 @Entity('requests')
 export class RequestEntity {

@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -11,6 +12,7 @@ import { CategoryEntity } from '../categories/entities/categories.entity';
 
 import { SkillEntity } from './entities/skills.entity';
 import { CreateSkillDTO } from './dto/skill.dto';
+import { Paginated } from './skills.controller';
 
 type FindAllParams = { page: number; limit: number };
 
@@ -28,13 +30,24 @@ export class SkillsService {
   ) {}
 
   // Получение всех навыков
-  async findAll({ limit, page }: FindAllParams): Promise<SkillEntity[]> {
-    return this.skillRepository.find({
+  async findAll({
+    limit,
+    page,
+  }: FindAllParams): Promise<Paginated<SkillEntity>> {
+    const [skills, total] = await this.skillRepository.findAndCount({
       take: limit,
       skip: (page - 1) * limit,
       relations: ['owner', 'category'],
       order: { id: 'desc' },
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > totalPages && totalPages !== 0) {
+      throw new NotFoundException('Page not found');
+    }
+
+    return { data: skills, page, totalPages };
   }
 
   // Создание нового навыка
@@ -113,6 +126,7 @@ export class SkillsService {
   async deleteSkill(skillId: number, userId: number): Promise<void> {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },
+      relations: ['owner'],
     });
     if (!skill) {
       throw new NotFoundException('Skill not found');
@@ -132,5 +146,61 @@ export class SkillsService {
     }
 
     await this.skillRepository.remove(skill);
+  }
+
+  // Добавление навыка в избранное
+  async addSkillToFavorites(skillId: number, userId: number): Promise<void> {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+      relations: ['owner'],
+    });
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
+      throw new ConflictException('Skill is already in favorites');
+    }
+
+    user.favoriteSkills.push(skill);
+    await this.userRepository.save(user);
+  }
+
+  async removeSkillFromFavorites(
+    skillId: number,
+    userId: number,
+  ): Promise<void> {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+      relations: ['owner'],
+    });
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
+      throw new NotFoundException('Skill is not in favorites');
+    }
+
+    user.favoriteSkills = user.favoriteSkills.filter(
+      (favSkill) => favSkill.id !== skillId,
+    );
+    await this.userRepository.save(user);
   }
 }
