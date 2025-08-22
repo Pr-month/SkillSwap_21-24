@@ -1,5 +1,4 @@
 import { FileValidator } from '@nestjs/common';
-import { Express } from 'express';
 
 export class ImageFilesValidator extends FileValidator<{
   allowedTypes: string[];
