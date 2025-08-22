@@ -1,9 +1,15 @@
 import 'reflect-metadata';
+import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
 
-import typeOrmConfig from '../src/config/typeorm.config';
-import { UserEntity } from '../src/users/entities/user.entity';
-import { Gender, UserRole } from '../src/users/enums';
+import typeOrmConfig from '../config/typeorm.config';
+import { UserEntity } from '../users/entities/user.entity';
+import { Gender, UserRole } from '../users/enums';
+
+async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+}
 
 async function seed() {
   const dataSource = new DataSource(typeOrmConfig);
@@ -15,7 +21,7 @@ async function seed() {
     {
       name: 'admin',
       email: 'admin@mail.ru',
-      password: 'admin',
+      password: await hashPassword('admin'),
       about: 'administrator',
       birthdate: new Date('2000-01-01'),
       city: 'Moscow',
