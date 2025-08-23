@@ -9,9 +9,11 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { Gender, UserRole } from '../enums';
+
 import { RequestEntity } from '../../requests/entities/request.entity';
+import { hashPassword } from '../../common/hash-password';
+
+import { Gender, UserRole } from '../enums';
 
 @Entity('users')
 export class UserEntity {
@@ -74,14 +76,14 @@ export class UserEntity {
   @Column({ nullable: true, select: false })
   refreshToken: string;
 
-  @BeforeInsert()
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-
   @OneToMany(() => RequestEntity, (request) => request.sender)
   sentRequests: RequestEntity[];
 
   @OneToMany(() => RequestEntity, (request) => request.receiver)
   receivedRequests: RequestEntity[];
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await hashPassword(this.password);
+  }
 }

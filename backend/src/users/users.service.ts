@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
 import { SkillEntity } from '../skills/entities/skills.entity';
+import { hashPassword } from '../common/hash-password';
+
 import { ResponceUserDTO } from './dto/user.dto';
 import { UserEntity } from './entities/user.entity';
 
@@ -61,7 +62,7 @@ export class UsersService {
     if (!user) {
       return null;
     }
-    user.password = await bcrypt.hash(password, 10);
+    user.password = await hashPassword(password);
 
     const updatedUser = await this.usersRepository.save(user);
     return toResponseUserDTO(updatedUser);
