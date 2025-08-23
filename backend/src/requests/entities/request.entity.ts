@@ -12,8 +12,8 @@ import {
 
 @Entity('requests')
 export class RequestEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @CreateDateColumn({ type: 'timestamp', nullable: false })
   createdAt: Date;

@@ -40,9 +40,11 @@ export class RequestsService {
     const [offeredSkill, requestedSkill] = await Promise.all([
       this.skillRepository.findOneOrFail({
         where: { id: dto.offeredSkillId },
+        relations: ['owner'],
       }),
       this.skillRepository.findOneOrFail({
         where: { id: dto.requestedSkillId },
+        relations: ['owner'],
       }),
     ]);
 
@@ -100,7 +102,7 @@ export class RequestsService {
   }
 
   async markAsReadRequest(
-    id: string,
+    id: number,
     currentUserId: number,
     currentUserRoles: UserRole[],
   ): Promise<RequestEntity> {
@@ -123,7 +125,7 @@ export class RequestsService {
   }
 
   async acceptRequest(
-    id: string,
+    id: number,
     currentUserId: number,
     currentUserRoles: UserRole[],
   ): Promise<RequestEntity> {
@@ -197,7 +199,7 @@ export class RequestsService {
   }
 
   async rejectRequest(
-    id: string,
+    id: number,
     currentUserId: number,
     currentUserRoles: UserRole[],
   ): Promise<RequestEntity> {
@@ -221,11 +223,14 @@ export class RequestsService {
   }
 
   async deleteRequest(
-    id: string,
+    id: number,
     currentUserId: number,
     currentUserRoles: UserRole[],
   ): Promise<void> {
-    const request = await this.requestRepository.findOne({ where: { id } });
+    const request = await this.requestRepository.findOne({
+      where: { id },
+      relations: ['sender'],
+    });
 
     if (!request) {
       throw new NotFoundException(`Request ${id} not found`);

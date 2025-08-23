@@ -119,7 +119,7 @@ export class RequestsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @Patch(':id/read')
-  async markAsReadRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+  async markAsReadRequest(@Param('id') id: number, @Req() req: ReqWithUser) {
     const { sub: currentUserId, roles: currentUserRoles } = req.user;
 
     return await this.requestsService.markAsReadRequest(
@@ -148,7 +148,7 @@ export class RequestsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @Patch(':id/accept')
-  async acceptRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+  async acceptRequest(@Param('id') id: number, @Req() req: ReqWithUser) {
     const { sub: currentUserId, roles: currentUserRoles } = req.user;
 
     return await this.requestsService.acceptRequest(
@@ -176,7 +176,7 @@ export class RequestsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @Patch(':id/reject')
-  async rejectRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+  async rejectRequest(@Param('id') id: number, @Req() req: ReqWithUser) {
     const { sub: currentUserId, roles: currentUserRoles } = req.user;
 
     return await this.requestsService.rejectRequest(
@@ -203,7 +203,7 @@ export class RequestsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @Delete(':id')
-  async deleteRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+  async deleteRequest(@Param('id') id: number, @Req() req: ReqWithUser) {
     const { sub: currentUserId, roles: currentUserRoles } = req.user;
 
     return this.requestsService.deleteRequest(
