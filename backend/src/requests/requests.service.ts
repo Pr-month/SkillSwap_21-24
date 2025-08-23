@@ -99,6 +99,103 @@ export class RequestsService {
     });
   }
 
+  async markAsReadRequest(
+    id: string,
+    currentUserId: number,
+    currentUserRoles: UserRole[],
+  ): Promise<RequestEntity> {
+    const request = await this.requestRepository.findOne({ where: { id } });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${id} not found`);
+    }
+
+    if (
+      request.receiver.id !== currentUserId &&
+      request.sender.id !== currentUserId &&
+      !currentUserRoles.includes(UserRole.ADMIN)
+    ) {
+      throw new ForbiddenException('You are not allowed to read this request');
+    }
+
+    request.isRead = true;
+    return await this.requestRepository.save(request);
+  }
+
+  async acceptRequest(
+    id: string,
+    currentUserId: number,
+    currentUserRoles: UserRole[],
+  ): Promise<RequestEntity> {
+    const request = await this.requestRepository.findOne({ where: { id } });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${id} not found`);
+    }
+
+    if (
+      request.receiver.id !== currentUserId &&
+      !currentUserRoles.includes(UserRole.ADMIN)
+    ) {
+      throw new ForbiddenException('Only the receiver or an administrator can accept a request');
+    }
+
+    return await this.requestRepository.manager.transaction(async transactionalManager => {
+      const receiver = await transactionalManager.findOne(UserEntity, { where: { id: request.receiver.id }, relations: ['skills'] });
+      if (!receiver) {
+        throw new NotFoundException(`Receiver user with ID ${request.receiver.id} not found.`);
+      }
+
+      const sender = await transactionalManager.findOne(UserEntity, { where: { id: request.sender.id }, relations: ['skills'] });
+      if (!sender) {
+        throw new NotFoundException(`Sender user with ID ${request.sender.id} not found.`);
+      }
+
+      const requestedSkill = await transactionalManager.findOne(SkillEntity, { where: { id: request.requestedSkill.id } });
+      if (!requestedSkill) {
+        throw new NotFoundException(`Requested skill with ID ${request.requestedSkill.id} not found.`);
+      }
+
+      const offeredSkill = await transactionalManager.findOne(SkillEntity, { where: { id: request.offeredSkill.id } });
+      if (!offeredSkill) {
+        throw new NotFoundException(`Offered skill with ID ${request.offeredSkill.id} not found.`);
+      }
+
+      receiver.skills.push(requestedSkill);
+      sender.skills.push(offeredSkill);
+
+      await transactionalManager.save(receiver);
+      await transactionalManager.save(sender);
+
+      request.status = RequestStatus.ACCEPTED;
+      await transactionalManager.save(request);
+
+      return request;
+    });
+  }
+
+  async rejectRequest(
+    id: string,
+    currentUserId: number,
+    currentUserRoles: UserRole[],
+  ): Promise<RequestEntity> {
+    const request = await this.requestRepository.findOne({ where: { id } });
+
+    if (!request) {
+      throw new NotFoundException(`Request ${id} not found`);
+    }
+
+    if (
+      request.receiver.id !== currentUserId &&
+      !currentUserRoles.includes(UserRole.ADMIN)
+    ) {
+      throw new ForbiddenException('Only the receiver or an administrator can reject a request');
+    }
+
+    request.status = RequestStatus.REJECTED;
+    return await this.requestRepository.save(request);
+  }
+
   async deleteRequest(
     id: string,
     currentUserId: number,

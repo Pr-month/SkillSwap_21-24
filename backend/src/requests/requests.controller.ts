@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDTO } from './dto/create-request.dto';
@@ -42,6 +43,45 @@ export class RequestsController {
     const { sub: senderId } = req.user;
 
     return this.requestsService.getOutgoingRequests(senderId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.USER)
+  @Patch(':id/read')
+  async markAsReadRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+    const { sub: currentUserId, roles: currentUserRoles } = req.user;
+
+    return await this.requestsService.markAsReadRequest(
+      id,
+      currentUserId,
+      currentUserRoles,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.USER)
+  @Patch(':id/accept')
+  async acceptRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+    const { sub: currentUserId, roles: currentUserRoles } = req.user;
+
+    return await this.requestsService.acceptRequest(
+      id,
+      currentUserId,
+      currentUserRoles,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.USER)
+  @Patch(':id/reject')
+  async rejectRequest(@Param('id') id: string, @Req() req: ReqWithUser) {
+    const { sub: currentUserId, roles: currentUserRoles } = req.user;
+
+    return await this.requestsService.rejectRequest(
+      id,
+      currentUserId,
+      currentUserRoles
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
