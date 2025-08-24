@@ -11,8 +11,6 @@ import {
   ParseIntPipe,
   Post,
   Delete,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
