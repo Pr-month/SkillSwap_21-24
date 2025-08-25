@@ -67,7 +67,9 @@ export class UsersController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async getUserById(@Param('id') id: number): Promise<ResponceUserDTO | null> {
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ResponceUserDTO | null> {
     return this.usersService.getUserById(id);
   }
   // Получение пользователей по ID навыка
