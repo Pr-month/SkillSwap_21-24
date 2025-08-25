@@ -18,9 +18,6 @@ import {
 
 import { ReqWithUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-//import { RolesGuard } from '../auth/guards/roles.guard';
-//import { Roles } from '../auth/decorators/roles.decorator';
-//import { UserRole } from '../users/enums';
 
 import { SkillsService } from './skills.service';
 import { SkillEntity } from './entities/skills.entity';
