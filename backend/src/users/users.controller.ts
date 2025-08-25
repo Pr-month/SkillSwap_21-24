@@ -44,6 +44,7 @@ export class UsersController {
   // Обновление текущего пользователя
   @UseGuards(JwtAuthGuard)
   @Patch('me')
+  @HttpCode(HttpStatus.OK)
   async updateCurrentUser(
     @Request() req: ReqWithUser,
     @Body() updateData: Partial<UserEntity>,
@@ -54,6 +55,7 @@ export class UsersController {
   // Обновление пароля текущего пользователя
   @UseGuards(JwtAuthGuard)
   @Patch('me/password')
+  @HttpCode(HttpStatus.OK)
   async updatePassword(
     @Request() req: ReqWithUser,
     @Body() updateData: { password: string },
@@ -70,6 +72,8 @@ export class UsersController {
   }
   // Получение пользователей по ID навыка
   @Get('by-skill/:id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   async findUsersBySkillId(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UserEntity[]> {
