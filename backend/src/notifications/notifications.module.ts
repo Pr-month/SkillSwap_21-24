@@ -4,5 +4,6 @@ import { WsJwtGuard } from './guards/ws-jwt.guard';
 
 @Module({
   providers: [NotificationsGateway, WsJwtGuard],
+  exports: [NotificationsGateway],
 })
 export class NotificationsModule {}

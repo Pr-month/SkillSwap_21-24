@@ -5,10 +5,11 @@ import { RequestsController } from './requests.controller';
 import { RequestEntity } from './entities/request.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { SkillEntity } from '../skills/entities/skills.entity';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([RequestEntity, UserEntity, SkillEntity])],
   controllers: [RequestsController],
-  providers: [RequestsService],
+  providers: [RequestsService, NotificationsGateway],
 })
 export class RequestsModule {}
