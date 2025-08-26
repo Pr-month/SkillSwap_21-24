@@ -18,7 +18,7 @@ import { UserRole } from 'src/users/enums';
 import { CategoryEntity } from './entities/categories.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 @Controller('categories')
 export class CategoriesController {
@@ -45,6 +45,20 @@ export class CategoriesController {
   @Post()
   //для swagger
   @ApiOperation({ summary: 'Создать новую категорию (только для админов)' })
+  @ApiBody({ // ← ДОБАВЛЕНО НОВАЯ ДЕКОРАТОР
+    type: CreateCategoryDto,
+    description: 'Данные для создания категории',
+    examples: {
+      example1: {
+        value: {
+          name: 'Игра на барабанах',
+          category: 'Игра на музыкальных инструментах',
+          subcategory: 'Барабаны',
+          description: 'Игра на музыкальных инструментах',
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: 201,
     description: 'Категория успешно создана',
@@ -66,8 +80,33 @@ export class CategoriesController {
   @Patch(':id')
   //для swagger
   @ApiOperation({ summary: 'Обновнить категорию (только для админов)' })
+  @ApiBody({ // ← ДОБАВЛЕНО НОВАЯ ДЕКОРАТОР
+    type: UpdateCategoryDto,
+    description: 'Данные для обновления категории',
+    examples: {
+      example1: {
+        summary: 'Пример обновления названия',
+        value: {
+          name: 'Новое название категории',
+        },
+      },
+      example2: {
+        summary: 'Пример обновления описания',
+        value: {
+          description: 'Новое описание категории',
+        },
+      },
+      example3: {
+        summary: 'Пример обновления нескольких полей',
+        value: {
+          name: 'Обновленное название',
+          description: 'Обновленное описание',
+        },
+      },
+    },
+  })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Категория успешно обновлена',
     type: CategoryEntity,
   })
@@ -98,7 +137,7 @@ export class CategoriesController {
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
   @ApiResponse({ status: 404, description: 'Категория не найдена' })
-  
+
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.categoriesService.remove(id);
   }
