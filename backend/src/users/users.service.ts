@@ -9,7 +9,7 @@ import { hashPassword } from '../common/hash-password';
 import { ResponceUserDTO } from './dto/user.dto';
 import { UserEntity } from './entities/user.entity';
 
-const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
+export const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
   return plainToInstance(ResponceUserDTO, user);
 };
 
@@ -85,9 +85,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const skill = await this.skillsRepository.findOneOrFail({
+    const skill = await this.skillsRepository.findOne({
       where: { id: skillId },
     });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
 
     // Проверяем, не добавлен ли уже навык в избранное
     if (!user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
@@ -110,10 +114,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Проверяем, существует ли навык
-    await this.skillsRepository.findOneOrFail({
+    const skill = await this.skillsRepository.findOne({
       where: { id: skillId },
     });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
 
     // Фильтруем массив favoriteSkills, исключая навык с указанным ID
     user.favoriteSkills = user.favoriteSkills.filter(

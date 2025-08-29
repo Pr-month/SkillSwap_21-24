@@ -49,6 +49,8 @@ function makeReq(sub: number): ReqWithUser {
 }
 
 describe('SkillsController', () => {
+  jest.clearAllMocks();
+
   let controller: SkillsController;
 
   beforeEach(async () => {
