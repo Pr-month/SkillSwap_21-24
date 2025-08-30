@@ -20,6 +20,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { RequestsService } from './requests.service';
@@ -31,6 +32,7 @@ import { UserRole } from '../users/enums';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RequestEntity } from './entities/request.entity';
 
+@ApiTags('Заявки')
 @Controller('requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
