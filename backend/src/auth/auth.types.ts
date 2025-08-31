@@ -28,3 +28,36 @@ export interface RefreshUser {
 export interface ReqWithUser extends Request {
   user: JwtPayload;
 }
+
+export interface AuthResponse {
+  success: boolean;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface LoginUser {
+  email: string;
+  password: string;
+}
+
+export interface RegisterUser {
+  name: string;
+  email: string;
+  password: string;
+  about: string;
+  birthdate: string;
+  city: string;
+  gender: string;
+  avatar: string;
+  category: number;
+}
+
+export interface RefreshTokenResponse {
+  success: boolean;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface LogoutResponse {
+  success: boolean;
+}

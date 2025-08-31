@@ -3,6 +3,7 @@ import {
   NotFoundException,
   Inject,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -52,6 +53,17 @@ export class AuthService {
   async createUser(
     userData: CreateUserDTO,
   ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
+    // Проверяем, существует ли пользователь с таким email
+    const existingUser = await this.userRepository.findOne({
+      where: {
+        email: userData.email,
+      },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('User with this email already exists');
+    }
+
     const category = await this.categotyRepository.findOne({
       where: {
         id: userData.category,

@@ -10,11 +10,11 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-//import { UserRole } from 'src/users/entities/user.entity';
-import { UserRole } from 'src/users/enums';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+//import { UserRole } from '../users/entities/user.entity';
+import { UserRole } from '../users/enums';
 import { CategoryEntity } from './entities/categories.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -34,7 +34,6 @@ export class CategoriesController {
     type: [CategoryEntity],
   })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера' })
-
   async findAll(): Promise<CategoryEntity[]> {
     return await this.categoriesService.findAll();
   }
@@ -53,7 +52,6 @@ export class CategoriesController {
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
-
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
   ): Promise<CategoryEntity> {
@@ -75,7 +73,6 @@ export class CategoriesController {
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
   @ApiResponse({ status: 404, description: 'Категория не найдена' })
-
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -98,7 +95,6 @@ export class CategoriesController {
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
   @ApiResponse({ status: 404, description: 'Категория не найдена' })
-  
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.categoriesService.remove(id);
   }

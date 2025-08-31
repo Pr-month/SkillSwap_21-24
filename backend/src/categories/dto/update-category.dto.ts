@@ -8,12 +8,10 @@ export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
     description: 'Название категории',
     example: 'Обновленное название',
   })
-
   name?: string;
   //для swagger
   @ApiPropertyOptional({
     description: 'ID родительской категории',
   })
-  
   parentId?: number;
 }
