@@ -26,7 +26,8 @@
     "seed:admin": "ts-node src/scripts/seed-admin.ts",
     "seed:users": "ts-node src/scripts/seed-users.ts",
     "seed:categories": "ts-node src/scripts/seed-categories.ts",
-    "seed:skills": "ts-node src/scripts/seed-skills.ts"
+    "seed:skills": "ts-node src/scripts/seed-skills.ts",
+    "seed:all": "npm run seed:admin && npm run seed:users && npm run seed:categories && npm run seed:skills"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -64,6 +65,7 @@
     "@nestjs/testing": "^11.0.1",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.10.7",
+    "@testcontainers/postgresql": "^11.5.1",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
@@ -73,6 +75,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
+    "dotenv": "^17.2.1",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

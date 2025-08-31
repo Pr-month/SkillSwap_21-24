@@ -1,4 +1,10 @@
 import 'reflect-metadata';
+import * as dotenv from 'dotenv';
+dotenv.config({
+  path:
+    process.env.DOTENV_CONFIG_PATH ||
+    (process.env.NODE_ENV === 'test' ? '.env.test' : '.env'),
+});
 
 import { AppDataSource } from '../config/typeorm.config';
 import { CategoryEntity } from '../categories/entities/categories.entity';
