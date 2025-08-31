@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UseGuards,
+  HttpCode,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, LoginResponseDTO, LoginUserDTO } from './dto/user.dto';
@@ -27,6 +34,7 @@ export class AuthController {
     return this.authService.createUser(userData);
   }
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Авторизация пользователя' })
   @ApiResponse({
     status: 200,
@@ -39,6 +47,7 @@ export class AuthController {
   }
   @UseGuards(RefreshTokenGuard)
   @Post('logout')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Выход пользователя и удаление refresh токена' })
   @ApiBearerAuth() // если используете Bearer JWT
   @ApiResponse({ status: 200, description: 'Пользователь вышел' })
@@ -50,6 +59,7 @@ export class AuthController {
   }
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Обновление access токена с помощью refresh токена',
   })

@@ -5,11 +5,12 @@ import { RequestsController } from './requests.controller';
 import { RequestEntity } from './entities/request.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { SkillEntity } from '../skills/entities/skills.entity';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { WsJwtGuard } from '../notifications/guards/ws-jwt.guard';
 
 @Module({
   imports: [TypeOrmModule.forFeature([RequestEntity, UserEntity, SkillEntity])],
   controllers: [RequestsController],
-  providers: [RequestsService, NotificationsGateway],
+  providers: [RequestsService, NotificationsGateway, WsJwtGuard],
 })
 export class RequestsModule {}

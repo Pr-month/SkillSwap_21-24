@@ -12,7 +12,7 @@ import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { RequestStatus } from '../common/constants';
 import { UserRole } from '../users/enums';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class RequestsService {

@@ -9,8 +9,8 @@ import { Server } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { AuthenticatedSocket } from './notification.types';
-import { RequestStatus } from 'src/common/constants';
-import { SkillEntity } from 'src/skills/entities/skills.entity';
+import { RequestStatus } from '../common/constants';
+import { SkillEntity } from '../skills/entities/skills.entity';
 
 const NOTIFICATIONS_PORT = Number(process.env.PORT_NOTIFICATIONS) || 3001;
 

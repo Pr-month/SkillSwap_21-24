@@ -2,7 +2,9 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { join } from 'path';
 
 import * as dotenv from 'dotenv';
-dotenv.config();
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
+const isSeeding = process.env.TYPE === 'seed';
 
 const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
@@ -14,6 +16,7 @@ const typeOrmConfig: DataSourceOptions = {
   entities: [join(__dirname, '../**/*.entity.{ts,js}')],
   migrations: ['src/migrations/*.ts'],
   synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+  dropSchema: isSeeding,
 };
 
 export default typeOrmConfig;

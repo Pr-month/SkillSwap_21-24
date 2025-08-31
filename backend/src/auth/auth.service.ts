@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CategoryEntity } from 'src/categories/entities/categories.entity';
-import { AppConfigType } from 'src/config/config.type';
-import { configuration } from 'src/config/configuration';
-import { SkillEntity } from 'src/skills/entities/skills.entity';
-import { UserEntity } from 'src/users/entities/user.entity';
-import { UserRole } from 'src/users/enums';
+import { CategoryEntity } from '../categories/entities/categories.entity';
+import { AppConfigType } from '../config/config.type';
+import { configuration } from '../config/configuration';
+import { SkillEntity } from '../skills/entities/skills.entity';
+import { UserEntity } from '../users/entities/user.entity';
+import { UserRole } from '../users/enums';
 import { Repository } from 'typeorm';
 import { CreateUserDTO, LoginResponseDTO, LoginUserDTO } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
