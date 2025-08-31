@@ -12,25 +12,31 @@ import { AuthenticatedSocket } from './notification.types';
 import { RequestStatus } from 'src/common/constants';
 import { SkillEntity } from 'src/skills/entities/skills.entity';
 
-@WebSocketGateway({ cors: true })
+const NOTIFICATIONS_PORT = Number(process.env.PORT_NOTIFICATIONS) || 3001;
+
+@WebSocketGateway(NOTIFICATIONS_PORT, {
+  cors: { origin: '*' },
+})
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
+  constructor(private readonly jwtGuard: WsJwtGuard) {}
   @WebSocketServer()
   server: Server;
 
   @UseGuards(WsJwtGuard)
   async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
+    await this.jwtGuard.verifyToken(client);
     if (!client.user) {
       client.disconnect(true);
       return;
     }
-
     const userId = client.user.sub;
     await client.join(userId.toString());
   }
 
-  handleDisconnect(client: AuthenticatedSocket) {
+  async handleDisconnect(client: AuthenticatedSocket) {
+    await this.jwtGuard.verifyToken(client);
     client.disconnect(true);
   }
 

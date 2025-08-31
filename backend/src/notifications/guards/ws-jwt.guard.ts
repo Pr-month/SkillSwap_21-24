@@ -1,25 +1,18 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AppConfigType } from 'src/config/config.type';
 import { configuration } from 'src/config/configuration';
 import { AuthenticatedSocket, JwtPayload } from '../notification.types';
 
 @Injectable()
-export class WsJwtGuard implements CanActivate {
+export class WsJwtGuard {
   constructor(
     @Inject(configuration.KEY)
     private readonly config: AppConfigType,
     private readonly jwtService: JwtService,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const client = context.switchToWs().getClient<AuthenticatedSocket>();
+  async verifyToken(client: AuthenticatedSocket) {
     const token = client.handshake.query?.token as string;
 
     if (!token) {
