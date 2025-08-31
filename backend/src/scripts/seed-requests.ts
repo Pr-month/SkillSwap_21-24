@@ -4,6 +4,7 @@ import { RequestEntity } from '../requests/entities/request.entity';
 import { RequestStatus } from '../common/constants';
 import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
+import { execSync } from 'child_process';
 
 async function seed() {
   console.log('🚀 Запуск сидирования заявок...');
@@ -18,48 +19,52 @@ async function seed() {
 
     const existingRequestsCount = await requestRepo.count();
     if (existingRequestsCount > 0) {
-      console.log('⚠️ Заявки уже существуют в базе данных. Сидинг пропускается.');
+      console.log(
+        '⚠️ Заявки уже существуют в базе данных. Сидинг пропускается.',
+      );
       await AppDataSource.destroy();
       return;
     }
 
-    const skillsData = [
-      { title: 'JavaScript', description: 'Опыт программирования на JS' },
-      { title: 'Python', description: 'Навыки Python-разработчика' },
-    ];
-    const testSkills = skillRepo.create(skillsData);
-    await skillRepo.save(testSkills);
+    const existingUsersCount = await userRepo.count();
+    if (existingUsersCount === 0) {
+      console.log('Пользователей нет, создаем их...');
+      execSync('npm run seed:users');
+    }
 
-    const usersData = [
-      { name: 'Иван Иванов', email: 'ivan@example.com', password: 'password123' },
-      { name: 'Василий Петров', email: 'vasya@example.com', password: 'password456' },
-    ];
-    const testUsers = userRepo.create(usersData);
-    await userRepo.save(testUsers);
+    const allUsers = await userRepo.find();
+
+    const existingSkillsCount = await skillRepo.count();
+    if (existingSkillsCount === 0) {
+      console.log('Навыков нет, создаем их...');
+      execSync('npm run seed:skills');
+    }
+
+    const allSkills = await skillRepo.find();
 
     const requestsData = [
       {
-        sender: testUsers[0],
-        receiver: testUsers[1],
+        sender: allUsers[0],
+        receiver: allUsers[1],
         status: RequestStatus.ACCEPTED,
-        offeredSkill: testSkills[0],
-        requestedSkill: testSkills[1],
+        offeredSkill: allSkills[0],
+        requestedSkill: allSkills[1],
         isRead: true,
       },
       {
-        sender: testUsers[1],
-        receiver: testUsers[0],
+        sender: allUsers[1],
+        receiver: allUsers[0],
         status: RequestStatus.REJECTED,
-        offeredSkill: testSkills[1],
-        requestedSkill: testSkills[0],
+        offeredSkill: allSkills[1],
+        requestedSkill: allSkills[0],
         isRead: false,
       },
       {
-        sender: testUsers[0],
-        receiver: testUsers[1],
+        sender: allUsers[0],
+        receiver: allUsers[1],
         status: RequestStatus.PENDING,
-        offeredSkill: testSkills[0],
-        requestedSkill: testSkills[1],
+        offeredSkill: allSkills[0],
+        requestedSkill: allSkills[1],
         isRead: false,
       },
     ];
