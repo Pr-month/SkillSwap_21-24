@@ -1,5 +1,3 @@
-// test/categories3.e2e-spec.ts
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -7,12 +5,12 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AppModule } from '../src/app.module';
 import { UserEntity } from '../src/users/entities/user.entity';
-import { CategoryEntity } from '../src/categories/entities/categories.entity';
-import { Gender, UserRole } from '../src/users/enums';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { Application } from 'express';
+import { seedCategories } from '../src/scripts/seed-categories';
+import { seedUsers } from '../src/scripts/seed-users';
+import { DataSource } from 'typeorm';
 
 // Определяем интерфейсы для типизации ответов
 interface ITestCategory {
@@ -26,11 +24,14 @@ describe('CategoriesController (e2e)', () => {
   let app: INestApplication;
   let jwtService: JwtService;
   let userRepository: Repository<UserEntity>;
-  let categoryRepository: Repository<CategoryEntity>;
+  let dataSource: DataSource;
   let adminToken: string;
   let userToken: string;
+  let testAdminUser: UserEntity | null;
+  let testRegularUser: UserEntity | null;
 
   beforeAll(async () => {
+    // 1. Создаем и инициализируем приложение NestJS
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true }), AppModule],
     }).compile();
@@ -38,95 +39,49 @@ describe('CategoriesController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
+    // 2. Получаем необходимые зависимости
     jwtService = moduleFixture.get<JwtService>(JwtService);
     userRepository = moduleFixture.get<Repository<UserEntity>>(
       getRepositoryToken(UserEntity),
     );
-    categoryRepository = moduleFixture.get<Repository<CategoryEntity>>(
-      getRepositoryToken(CategoryEntity),
-    );
+    dataSource = moduleFixture.get<DataSource>(DataSource);
 
-    // Очищаем базу данных перед тестами
-    try {
-      await categoryRepository.query(
-        'TRUNCATE TABLE categories RESTART IDENTITY CASCADE',
-      );
-      await userRepository.query(
-        'TRUNCATE TABLE users RESTART IDENTITY CASCADE',
-      );
-    } catch (e) {
-      console.error('Error truncating tables:', e);
+    // 3. Запускаем скрипты сидинга, передавая существующий dataSource
+    console.log('Запуск скриптов сидинга...');
+    await seedCategories(dataSource); // Используем тот же dataSource
+    await seedUsers(dataSource); // Используем тот же dataSource
+    console.log('Скрипты сидинга выполнены.');
+
+    // 4. Получаем созданных пользователей
+    testAdminUser = await userRepository.findOne({
+      where: { email: 'vasya@mail.ru' },
+    });
+    testRegularUser = await userRepository.findOne({
+      where: { email: 'ivan@mail.ru' },
+    });
+
+    console.log('Найденные пользователи:', {
+      admin: testAdminUser?.email,
+      user: testRegularUser?.email,
+    });
+
+    if (!testAdminUser || !testRegularUser) {
+      throw new Error('Не удалось найти тестовых пользователей после сидинга');
     }
 
-    // Создаем тестовых пользователей
-    await createTestUsers();
-
-    // Создаем тестовые категории
-    await createTestCategories();
-  }, 30000); // Увеличиваем таймаут для beforeAll
-
-  // Создание тестовых пользователей
-  async function createTestUsers() {
-    // Создаем администратора
-    const admin = userRepository.create({
-      name: 'Admin User',
-      email: 'admin@test.com',
-      password: await bcrypt.hash('admin123', 10),
-      about: 'Admin user',
-      birthdate: new Date('1990-01-01'),
-      city: 'Test City',
-      gender: Gender.MALE,
-      avatar: 'admin-avatar.jpg',
-      role: UserRole.ADMIN,
-      refreshToken: '',
-    });
-    await userRepository.save(admin);
-
-    // Создаем обычного пользователя
-    const user = userRepository.create({
-      name: 'Regular User',
-      email: 'user@test.com',
-      password: await bcrypt.hash('user123', 10),
-      about: 'Regular user',
-      birthdate: new Date('1995-01-01'),
-      city: 'User City',
-      gender: Gender.FEMALE,
-      avatar: 'user-avatar.jpg',
-      role: UserRole.USER,
-      refreshToken: '',
-    });
-    await userRepository.save(user);
-
-    // Генерируем токены
+    // 5. Генерируем токены для тестов
     adminToken = jwtService.sign({
-      sub: admin.id,
-      email: admin.email,
-      roles: [admin.role],
+      sub: testAdminUser.id,
+      email: testAdminUser.email,
+      roles: [testAdminUser.role],
     });
 
     userToken = jwtService.sign({
-      sub: user.id,
-      email: user.email,
-      roles: [user.role],
+      sub: testRegularUser.id,
+      email: testRegularUser.email,
+      roles: [testRegularUser.role],
     });
-  }
-
-  // Создание тестовых категорий
-  async function createTestCategories() {
-    // Создаем основную категорию
-    const parentCategory = categoryRepository.create({
-      name: 'Test Parent Category',
-      parent: null,
-    });
-    const savedParent = await categoryRepository.save(parentCategory);
-
-    // Создаем подкатегорию
-    const childCategory = categoryRepository.create({
-      name: 'Test Child Category',
-      parent: savedParent,
-    });
-    await categoryRepository.save(childCategory);
-  }
+  }, 60000);
 
   afterAll(async () => {
     await app.close();
@@ -172,17 +127,18 @@ describe('CategoriesController (e2e)', () => {
 
       // Ищем родительскую категорию
       const parentCategory = categories.find(
-        (cat: ITestCategory) => cat.name === 'Test Parent Category',
+        (cat: ITestCategory) => cat.name === 'Творчество и искусство',
       );
 
       expect(parentCategory).toBeDefined();
 
       if (parentCategory) {
-        // Проверяем, что у родительской категории есть одна дочерняя
-        expect(parentCategory.children).toHaveLength(1);
+        // Проверяем, что у родительской категории есть дочерние категории (8 штук из сидинга)
+        expect(parentCategory.children.length).toBeGreaterThan(0);
 
-        const childCategory = parentCategory.children[0];
-        expect(childCategory.name).toBe('Test Child Category');
+        // Проверяем, что первая дочерняя категория имеет правильное имя
+        const firstChild = parentCategory.children[0];
+        expect(firstChild.name).toBe('Управление командой'); // Первая категория из сидинга
       }
     });
   });
