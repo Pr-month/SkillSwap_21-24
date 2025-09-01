@@ -1,22 +1,34 @@
 import 'reflect-metadata';
-import { AppDataSource } from '../config/typeorm.config';
 import * as bcrypt from 'bcrypt';
+import { AppDataSource } from '../config/typeorm.config';
 import { UserEntity } from '../users/entities/user.entity';
 import { Gender, UserRole } from '../users/enums';
+import { DataSource } from 'typeorm';
 
 async function hashPassword(password: string): Promise<string> {
   const saltRounds = 10;
   return await bcrypt.hash(password, saltRounds);
 }
 
-async function seed() {
+// Экспортируем функцию сидинга, принимающую dataSource
+export async function seedUsers(dataSource?: DataSource) {
+  let useDataSource = dataSource;
+  let needToInitialize = false;
+
+  // Если dataSource не передан, создаем новый
+  if (!useDataSource) {
+    const { AppDataSource } = await import('../config/typeorm.config');
+    useDataSource = AppDataSource;
+    needToInitialize = true;
+  }
+
+  if (needToInitialize) {
+    await useDataSource.initialize();
+  }
+
   console.log('🚀 Запуск сидинга пользователей...');
-
   try {
-    await AppDataSource.initialize();
-    console.log('✅ Подключение к базе данных установлено');
-
-    const userRepo = AppDataSource.getRepository(UserEntity);
+    const userRepo = useDataSource.getRepository(UserEntity);
 
     // Проверяем, есть ли уже пользователи
     const existingUsers = await userRepo.count();
@@ -24,7 +36,9 @@ async function seed() {
       console.log(
         '⚠️  Пользователи уже существуют в базе данных. Сидинг пропущен.',
       );
-      await AppDataSource.destroy();
+      if (needToInitialize) {
+        await useDataSource.destroy();
+      }
       return;
     }
 
@@ -33,7 +47,7 @@ async function seed() {
       {
         name: 'Ivan Ivanov',
         email: 'ivan@mail.ru',
-        password: await hashPassword('password123'),
+        password: 'password123',
         about: 'Frontend developer with 3 years of experience',
         birthdate: new Date('2000-01-01'),
         city: 'Moscow',
@@ -45,7 +59,7 @@ async function seed() {
       {
         name: 'Vasya Pupkin',
         email: 'vasya@mail.ru',
-        password: await hashPassword('admin123'),
+        password: 'admin123',
         about: 'Backend developer and system administrator',
         birthdate: new Date('1995-05-15'),
         city: 'Saint Petersburg',
@@ -68,15 +82,26 @@ async function seed() {
     console.log('   Администратор: vasya@mail.ru / admin123');
     console.log('   Пользователь: ivan@mail.ru / password123');
 
-    await AppDataSource.destroy();
+    if (needToInitialize) {
+      await useDataSource.destroy();
+    }
     console.log('✅ Сидинг пользователей завершен успешно!');
   } catch (error) {
     console.error('❌ Ошибка при выполнении сидинга пользователей:', error);
-    process.exit(1);
+    if (needToInitialize) {
+      await useDataSource.destroy();
+    }
+    if (!dataSource) {
+      process.exit(1);
+    }
+    throw error;
   }
 }
 
-seed().catch((error) => {
-  console.error('❌ Критическая ошибка сидинга:', error);
-  process.exit(1);
-});
+// Если файл запущен напрямую (не как модуль)
+if (require.main === module) {
+  seedUsers().catch((error) => {
+    console.error('❌ Критическая ошибка сидинга:', error);
+    process.exit(1);
+  });
+}

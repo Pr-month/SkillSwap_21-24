@@ -14,7 +14,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ParseFilePipeBuilder } from '@nestjs/common';
+import { ParseFilePipe } from '@nestjs/common';
 import { FilesService } from './files.service';
 
 @ApiTags('Файлы')
@@ -43,17 +43,10 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /^image\/(jpeg|png|webp|gif)$/,
-        })
-        .addMaxSizeValidator({
-          maxSize: 2 * 1024 * 1024,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-          fileIsRequired: true,
-        }),
+      new ParseFilePipe({
+        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        fileIsRequired: true,
+      }),
     )
     file: Express.Multer.File,
   ) {

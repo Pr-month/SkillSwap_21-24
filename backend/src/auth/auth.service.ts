@@ -13,7 +13,7 @@ import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums';
 import { Repository } from 'typeorm';
-import { CreateUserDTO, LoginUserDTO } from './dto/user.dto';
+import { CreateUserDTO, LoginResponseDTO, LoginUserDTO } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -49,9 +49,7 @@ export class AuthService {
     };
   }
 
-  async createUser(
-    userData: CreateUserDTO,
-  ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
+  async createUser(userData: CreateUserDTO): Promise<LoginResponseDTO> {
     const category = await this.categotyRepository.findOne({
       where: {
         id: userData.category,
@@ -80,9 +78,7 @@ export class AuthService {
     };
   }
 
-  async loginUser(
-    userData: LoginUserDTO,
-  ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
+  async loginUser(userData: LoginUserDTO): Promise<LoginResponseDTO> {
     const { email, password } = userData;
     const user = await this.userRepository.findOne({
       where: {
@@ -133,9 +129,7 @@ export class AuthService {
     return user;
   }
 
-  async refreshToken(
-    token: string,
-  ): Promise<{ success: boolean; accessToken: string; refreshToken: string }> {
+  async refreshToken(token: string): Promise<LoginResponseDTO> {
     const user = await this.deleteRefreshToken(token);
     const { accessToken, refreshToken } = await this._generateTokens(user);
     await this.userRepository.update(user.id, {

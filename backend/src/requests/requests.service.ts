@@ -12,6 +12,7 @@ import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { RequestStatus } from '../common/constants';
 import { UserRole } from '../users/enums';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class RequestsService {
@@ -22,6 +23,7 @@ export class RequestsService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(SkillEntity)
     private readonly skillRepository: Repository<SkillEntity>,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async createRequest(
@@ -73,7 +75,11 @@ export class RequestsService {
       status: RequestStatus.PENDING,
       isRead: false,
     });
-
+    this.notificationsGateway.notifyNewRequest(
+      requestedSkill.owner.id,
+      requestedSkill,
+      user.id,
+    );
     return await this.requestRepository.save(newRequest);
   }
 
