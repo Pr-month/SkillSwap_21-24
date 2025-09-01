@@ -4,7 +4,6 @@ import { join } from 'path';
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
-const isSeeding = process.env.TYPE === 'seed';
 
 const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
