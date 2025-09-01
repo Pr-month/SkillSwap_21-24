@@ -3,9 +3,8 @@ import { join } from 'path';
 
 import * as dotenv from 'dotenv';
 
-//dotenv.config();
-
-dotenv.config({ path: '.env.test' }); // Загружаем переменные окружения из .env.test
+dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
+const isSeeding = process.env.TYPE === 'seed';
 
 const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
@@ -18,6 +17,7 @@ const typeOrmConfig: DataSourceOptions = {
   migrations: ['src/migrations/*.ts'],
   dropSchema: process.env.DROP_SCHEMA === 'true',
   synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+  dropSchema: isSeeding,
 };
 
 export default typeOrmConfig;

@@ -9,6 +9,8 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Post,
+  Delete,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -72,5 +74,27 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<UserEntity[]> {
     return this.usersService.findUsersBySkillId(id);
+  }
+
+  // Добавление навыка в избранное
+  @UseGuards(JwtAuthGuard)
+  @Post('favorites/:skillId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async addSkillToFavorites(
+    @Request() req: ReqWithUser,
+    @Param('skillId', ParseIntPipe) skillId: number,
+  ): Promise<void> {
+    return this.usersService.addSkillToFavorites(req.user.sub, skillId);
+  }
+
+  // Удаление навыка из избранного
+  @UseGuards(JwtAuthGuard)
+  @Delete('favorites/:skillId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeSkillFromFavorites(
+    @Request() req: ReqWithUser,
+    @Param('skillId', ParseIntPipe) skillId: number,
+  ): Promise<void> {
+    return this.usersService.removeSkillFromFavorites(req.user.sub, skillId);
   }
 }

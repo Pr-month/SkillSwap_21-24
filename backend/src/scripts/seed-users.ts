@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import * as bcrypt from 'bcrypt';
+import { AppDataSource } from '../config/typeorm.config';
 import { UserEntity } from '../users/entities/user.entity';
 import { Gender, UserRole } from '../users/enums';
 import { DataSource } from 'typeorm';
@@ -26,7 +27,6 @@ export async function seedUsers(dataSource?: DataSource) {
   }
 
   console.log('🚀 Запуск сидинга пользователей...');
-
   try {
     const userRepo = useDataSource.getRepository(UserEntity);
 
@@ -47,7 +47,7 @@ export async function seedUsers(dataSource?: DataSource) {
       {
         name: 'Ivan Ivanov',
         email: 'ivan@mail.ru',
-        password: await hashPassword('password123'),
+        password: 'password123',
         about: 'Frontend developer with 3 years of experience',
         birthdate: new Date('2000-01-01'),
         city: 'Moscow',
@@ -59,7 +59,7 @@ export async function seedUsers(dataSource?: DataSource) {
       {
         name: 'Vasya Pupkin',
         email: 'vasya@mail.ru',
-        password: await hashPassword('admin123'),
+        password: 'admin123',
         about: 'Backend developer and system administrator',
         birthdate: new Date('1995-05-15'),
         city: 'Saint Petersburg',
