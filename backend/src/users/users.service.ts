@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
@@ -73,12 +73,60 @@ export class UsersService {
     return user ? toResponseUserDTO(user) : null;
   }
 
+  // Добавление навыка в избранное
+  async addSkillToFavorites(userId: number, skillId: number): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const skill = await this.skillsRepository.findOneOrFail({
+      where: { id: skillId },
+    });
+
+    // Проверяем, не добавлен ли уже навык в избранное
+    if (!user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
+      user.favoriteSkills.push(skill);
+      await this.usersRepository.save(user);
+    }
+  }
+
+  // Удаление навыка из избранного
+  async removeSkillFromFavorites(
+    userId: number,
+    skillId: number,
+  ): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Проверяем, существует ли навык
+    await this.skillsRepository.findOneOrFail({
+      where: { id: skillId },
+    });
+
+    // Фильтруем массив favoriteSkills, исключая навык с указанным ID
+    user.favoriteSkills = user.favoriteSkills.filter(
+      (favSkill) => favSkill.id !== skillId,
+    );
+    await this.usersRepository.save(user);
+  }
+
   // Получение пользователей по ID навыка
   async findUsersBySkillId(skillId: number): Promise<UserEntity[]> {
     // Найти навык по ID
     const skill = await this.skillsRepository.findOne({
       where: { id: skillId },
-      relations: ['category'],
+      relations: ['category', 'owner'],
     });
 
     if (!skill) {

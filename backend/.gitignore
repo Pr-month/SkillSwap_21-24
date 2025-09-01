@@ -14,11 +14,12 @@ lerna-debug.log*
 
 # OS
 .DS_Store
-
+/public
 # Tests
 /coverage
 /.nyc_output
-
+.env.test
+.env.development
 # IDEs and editors
 /.idea
 .project
@@ -38,6 +39,7 @@ lerna-debug.log*
 # dotenv environment variable files
 .env
 .env.development.local
+.env.test
 .env.test.local
 .env.production.local
 .env.local

@@ -2,7 +2,8 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { join } from 'path';
 
 import * as dotenv from 'dotenv';
-dotenv.config();
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
 
 const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
@@ -13,7 +14,8 @@ const typeOrmConfig: DataSourceOptions = {
   database: process.env.POSTGRES_DB || 'SkillSwapDB',
   entities: [join(__dirname, '../**/*.entity.{ts,js}')],
   migrations: ['src/migrations/*.ts'],
-  synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
+  dropSchema: process.env.TYPEORM_SYNCHRONIZE === 'true',
+  synchronize: process.env.NODE_ENV !== 'production'
 };
 
 export default typeOrmConfig;

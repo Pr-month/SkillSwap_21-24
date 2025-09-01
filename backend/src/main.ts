@@ -6,6 +6,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { AppConfigType } from './config/config.type';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { SwaggerModule } from '@nestjs/swagger';
+import { swaggerConfig, swaggerOptions } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -20,6 +22,11 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Swagger configuration
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document, swaggerOptions);
+
   app.useStaticAssets(join(__dirname, '..', 'public'));
   const logger: LoggerService = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);

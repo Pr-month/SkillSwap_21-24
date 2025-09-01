@@ -1,5 +1,5 @@
-import { AppDataSource } from '../config/typeorm.config';
 import { CategoryEntity } from '../categories/entities/categories.entity';
+import { DataSource } from 'typeorm';
 
 // Данные для сидинга
 const CategoriesData = [
@@ -71,15 +71,30 @@ const CategoriesData = [
   },
 ];
 
-async function seed() {
-  await AppDataSource.initialize(); // Используем подключение из config/ormconfig.ts
-  const categoryRepo = AppDataSource.getRepository(CategoryEntity);
+// Экспортируем функцию сидинга, принимающую dataSource
+export async function seedCategories(dataSource?: DataSource) {
+  let useDataSource = dataSource;
+  let needToInitialize = false;
+
+  // Если dataSource не передан, создаем новый
+  if (!useDataSource) {
+    const { AppDataSource } = await import('../config/typeorm.config');
+    useDataSource = AppDataSource;
+    needToInitialize = true;
+  }
+
+  if (needToInitialize) {
+    await useDataSource.initialize();
+  }
+
+  const categoryRepo = useDataSource.getRepository(CategoryEntity);
 
   const existing = await categoryRepo.count();
   if (existing > 0) {
-    // Устанавливаем данные только в том случае, если таблица пустая
     console.log('Категории уже существуют в базе данных. Сидинг пропущен.');
-    await AppDataSource.destroy();
+    if (needToInitialize) {
+      await useDataSource.destroy();
+    }
     return;
   }
 
@@ -114,11 +129,16 @@ async function seed() {
     console.error('❌ Ошибка при выполнении сидинга:', error);
     throw error;
   } finally {
-    await AppDataSource.destroy();
+    if (needToInitialize) {
+      await useDataSource.destroy();
+    }
   }
 }
 
-seed().catch((e) => {
-  console.error('❌ Критическая ошибка сидинга:', e);
-  process.exit(1);
-});
+// Если файл запущен напрямую (не как модуль)
+if (require.main === module) {
+  seedCategories().catch((e) => {
+    console.error('❌ Критическая ошибка сидинга:', e);
+    process.exit(1);
+  });
+}
