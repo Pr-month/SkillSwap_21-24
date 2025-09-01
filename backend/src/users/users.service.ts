@@ -70,7 +70,10 @@ export class UsersService {
 
   // Получение данных пользователя по ID
   async getUserById(id: number): Promise<ResponceUserDTO | null> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['favoriteSkills'],
+    });
     return user ? toResponseUserDTO(user) : null;
   }
 
