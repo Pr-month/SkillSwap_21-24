@@ -1,14 +1,7 @@
 import 'reflect-metadata';
-import * as bcrypt from 'bcrypt';
-import { AppDataSource } from '../config/typeorm.config';
+import { DataSource } from 'typeorm';
 import { UserEntity } from '../users/entities/user.entity';
 import { Gender, UserRole } from '../users/enums';
-import { DataSource } from 'typeorm';
-
-async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 10;
-  return await bcrypt.hash(password, saltRounds);
-}
 
 // Экспортируем функцию сидинга, принимающую dataSource
 export async function seedUsers(dataSource?: DataSource) {

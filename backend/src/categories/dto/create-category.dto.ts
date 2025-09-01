@@ -7,7 +7,6 @@ export class CreateCategoryDto {
     description: 'Название категории',
     example: 'Программирование',
   })
-
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -16,7 +15,6 @@ export class CreateCategoryDto {
     //для swagger
     description: 'ID родительской категории (опционально)',
   })
-
   @IsOptional()
   @IsNumber()
   parentId?: number;

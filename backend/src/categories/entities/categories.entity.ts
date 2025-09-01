@@ -16,7 +16,6 @@ export class CategoryEntity {
   @ApiProperty({
     description: 'Уникальный идентификатор категории',
   })
-
   id: number;
 
   @Column()
@@ -24,7 +23,6 @@ export class CategoryEntity {
   @ApiProperty({
     description: 'Название категории',
   })
-  
   name: string;
 
   // Ссылка на родительскую категорию (основная категория)
@@ -32,7 +30,6 @@ export class CategoryEntity {
   @ApiPropertyOptional({
     description: 'Родительская категория',
   })
-
   @ManyToOne(() => CategoryEntity, (category) => category.children, {
     nullable: true,
     onDelete: 'SET NULL',
@@ -45,7 +42,6 @@ export class CategoryEntity {
     description: 'Дочерние категории',
     type: () => [CategoryEntity],
   })
-
   @OneToMany(() => CategoryEntity, (category) => category.parent)
   children: CategoryEntity[];
   //для swagger
@@ -53,7 +49,6 @@ export class CategoryEntity {
     description: 'Навыки в этой категории',
     type: () => [SkillEntity],
   })
-  
   @OneToMany(() => SkillEntity, (skill) => skill.category)
   skills: SkillEntity[];
 }

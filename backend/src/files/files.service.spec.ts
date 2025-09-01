@@ -5,7 +5,7 @@ describe('FilesService', () => {
   let service: FilesService;
 
   class EmptyStream extends Readable {
-    _read(size: number) {}
+    _read() {}
   }
 
   beforeEach(() => {
