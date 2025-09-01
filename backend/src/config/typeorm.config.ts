@@ -14,7 +14,7 @@ const typeOrmConfig: DataSourceOptions = {
   database: process.env.POSTGRES_DB || 'SkillSwapDB',
   entities: [join(__dirname, '../**/*.entity.{ts,js}')],
   migrations: ['src/migrations/*.ts'],
-  dropSchema: process.env.NODE_ENV === 'test',
+  dropSchema: process.env.TYPEORM_SYNCHRONIZE === 'true',
   synchronize: process.env.NODE_ENV !== 'production'
 };
 
