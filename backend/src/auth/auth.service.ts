@@ -84,7 +84,7 @@ export class AuthService {
       where: {
         email: email,
       },
-      select: ['id', 'email', 'password'],
+      select: ['id', 'email', 'password', 'role'],
     });
     if (!user) {
       throw new UnauthorizedException('Incorrectly entered email address');
