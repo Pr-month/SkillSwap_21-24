@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AppConfigType } from '../../config/config.type';
 import { configuration } from '../../config/configuration';
 import { AuthenticatedSocket, JwtPayload } from '../notification.types';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export class WsJwtGuard {
@@ -19,15 +20,27 @@ export class WsJwtGuard {
       throw new UnauthorizedException('Token not provided');
     }
 
-    const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
-      secret: this.config.jwt.jwtSecret,
-    });
-    if (!payload) {
-      throw new UnauthorizedException('Invalid token');
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.config.jwt.jwtSecret,
+      });
+
+      if (!payload) {
+        throw new UnauthorizedException('Invalid token payload');
+      }
+
+      client.user = payload;
+
+      return true;
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      } else if (err instanceof JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      } else {
+        // Общая ошибка
+        throw new UnauthorizedException('Authentication failed');
+      }
     }
-
-    client.user = payload;
-
-    return true;
   }
 }

@@ -11,6 +11,8 @@ import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { AuthenticatedSocket } from './notification.types';
 import { RequestStatus } from '../common/constants';
 import { SkillEntity } from '../skills/entities/skills.entity';
+import { UnauthorizedException } from '@nestjs/common';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 const NOTIFICATIONS_PORT = Number(process.env.PORT_NOTIFICATIONS) || 3001;
 
@@ -26,18 +28,38 @@ export class NotificationsGateway
 
   @UseGuards(WsJwtGuard)
   async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
-    await this.jwtGuard.verifyToken(client);
-    if (!client.user) {
-      client.disconnect(true);
-      return;
+    try {
+      await this.jwtGuard.verifyToken(client);
+      if (!client.user) {
+        client.disconnect(true);
+        return;
+      }
+      const userId = client.user.sub;
+      await client.join(userId.toString());
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      } else if (err instanceof JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      } else {
+        throw new UnauthorizedException('Authentication failed');
+      }
     }
-    const userId = client.user.sub;
-    await client.join(userId.toString());
   }
 
   async handleDisconnect(client: AuthenticatedSocket) {
-    await this.jwtGuard.verifyToken(client);
-    client.disconnect(true);
+    try {
+      await this.jwtGuard.verifyToken(client);
+      client.disconnect(true);
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      } else if (err instanceof JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      } else {
+        throw new UnauthorizedException('Authentication failed');
+      }
+    }
   }
 
   notifyUser(
