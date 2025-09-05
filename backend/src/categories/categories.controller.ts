@@ -19,10 +19,10 @@ import { UserRole } from '../users/enums';
 import { CategoryEntity } from './entities/categories.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CategoryUpdateResponseDto } from './dto/category-update-response.dto';
-import { CategoryListResponseDto } from './dto/category-list-response.dto';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CategoryCreateResponseDto } from './dto/category-create-response.dto';
+import { CategoryListResponseDto } from './dto/category-list-response.dto';
+import { CategoryUpdateResponseDto } from './dto/category-update-response.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -57,6 +57,10 @@ export class CategoriesController {
   @Post()
   //для swagger
   @ApiOperation({ summary: 'Создать новую категорию (только для админов)' })
+  @ApiBody({
+    type: CreateCategoryDto,
+    description: 'Данные для создания категории',
+  })
   @ApiResponse({
     status: 201,
     description: 'Категория успешно создана',
@@ -83,6 +87,10 @@ export class CategoriesController {
   @HttpCode(200)
   //для swagger
   @ApiOperation({ summary: 'Обновнить категорию (только для админов)' })
+  @ApiBody({
+    type: UpdateCategoryDto,
+    description: 'Данные для обновления категории',
+  })
   @ApiResponse({
     status: 200,
     description: 'Категория успешно обновлена',

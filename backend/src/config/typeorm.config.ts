@@ -15,7 +15,7 @@ const typeOrmConfig: DataSourceOptions = {
   entities: [join(__dirname, '../**/*.entity.{ts,js}')],
   migrations: ['src/migrations/*.ts'],
   dropSchema: process.env.TYPEORM_SYNCHRONIZE === 'true',
-  synchronize: process.env.NODE_ENV !== 'production'
+  synchronize: process.env.NODE_ENV !== 'production',
 };
 
 export default typeOrmConfig;
