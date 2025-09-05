@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,12 +31,21 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Получить все категории' })
   @ApiResponse({
     status: 200,
-    description: 'Список всех категорий',
-    type: [CategoryEntity],
+    description: 'Список всех родительских категорий',
+    type: [CategoryListResponseDto],
   })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера' })
-  async findAll(): Promise<CategoryEntity[]> {
-    return await this.categoriesService.findAll();
+  async findAll(): Promise<CategoryListResponseDto[]> {
+    const categories = await this.categoriesService.findAll();
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      children: category.children.map((child) => ({
+        id: child.id,
+        name: child.name,
+        children: [],
+      })),
+    }));
   }
 
   // ➕ Защищенный маршрут - только для админов
@@ -51,21 +61,27 @@ export class CategoriesController {
   @ApiResponse({
     status: 201,
     description: 'Категория успешно создана',
-    type: CategoryEntity,
+    type: CategoryCreateResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
-  ): Promise<CategoryEntity> {
-    return await this.categoriesService.create(createCategoryDto);
+  ): Promise<CategoryCreateResponseDto> {
+    const createdCategory =
+      await this.categoriesService.create(createCategoryDto);
+    return {
+      id: createdCategory.id,
+      name: createdCategory.name,
+    };
   }
 
   // ✏️ Защищенный маршрут - только для админов
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
+  @HttpCode(200)
   //для swagger
   @ApiOperation({ summary: 'Обновнить категорию (только для админов)' })
   @ApiBody({
@@ -73,9 +89,9 @@ export class CategoriesController {
     description: 'Данные для обновления категории',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Категория успешно обновлена',
-    type: CategoryEntity,
+    type: CategoryUpdateResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
@@ -84,22 +100,25 @@ export class CategoriesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryEntity> {
-    return await this.categoriesService.update(id, updateCategoryDto);
+  ): Promise<CategoryUpdateResponseDto> {
+    const updatedEntity: CategoryEntity = await this.categoriesService.update(
+      id,
+      updateCategoryDto,
+    );
+    return updatedEntity as unknown as CategoryUpdateResponseDto;
   }
 
   // ❌ Защищенный маршрут - только для админов
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete(':id')
+  @HttpCode(204)
   //для swagger
   @ApiOperation({ summary: 'Удалить категорию (только для админов)' })
   @ApiResponse({
-    status: 201,
+    status: 204,
     description: 'Категория успешно удалена',
-    type: CategoryEntity,
   })
-  @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
   @ApiResponse({ status: 404, description: 'Категория не найдена' })
