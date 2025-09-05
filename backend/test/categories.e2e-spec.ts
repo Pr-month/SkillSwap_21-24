@@ -47,10 +47,8 @@ describe('CategoriesController (e2e)', () => {
     dataSource = moduleFixture.get<DataSource>(DataSource);
 
     // 3. Запускаем скрипты сидинга, передавая существующий dataSource
-    console.log('Запуск скриптов сидинга...');
     await seedCategories(dataSource); // Используем тот же dataSource
     await seedUsers(dataSource); // Используем тот же dataSource
-    console.log('Скрипты сидинга выполнены.');
 
     // 4. Получаем созданных пользователей
     testAdminUser = await userRepository.findOne({
@@ -58,11 +56,6 @@ describe('CategoriesController (e2e)', () => {
     });
     testRegularUser = await userRepository.findOne({
       where: { email: 'ivan@mail.ru' },
-    });
-
-    console.log('Найденные пользователи:', {
-      admin: testAdminUser?.email,
-      user: testRegularUser?.email,
     });
 
     if (!testAdminUser || !testRegularUser) {
