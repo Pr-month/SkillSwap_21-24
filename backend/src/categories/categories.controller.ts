@@ -21,6 +21,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CategoryResponseDto } from './dto/category-response.dto';
+import { CategoryListResponseDto } from './dto/category-list-response.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -32,12 +33,21 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Получить все категории' })
   @ApiResponse({
     status: 200,
-    description: 'Список всех категорий',
-    type: [CategoryEntity],
+    description: 'Список всех родительских категорий',
+    type: [CategoryListResponseDto],
   })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера' })
-  async findAll(): Promise<CategoryEntity[]> {
-    return await this.categoriesService.findAll();
+  async findAll(): Promise<CategoryListResponseDto[]> {
+    const categories = await this.categoriesService.findAll();
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      children: category.children.map((child) => ({
+        id: child.id,
+        name: child.name,
+        children: [],
+      })),
+    }));
   }
 
   // ➕ Защищенный маршрут - только для админов
