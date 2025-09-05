@@ -20,8 +20,9 @@ import { CategoryEntity } from './entities/categories.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CategoryResponseDto } from './dto/category-response.dto';
+import { CategoryUpdateResponseDto } from './dto/category-update-response.dto';
 import { CategoryListResponseDto } from './dto/category-list-response.dto';
+import { CategoryCreateResponseDto } from './dto/category-create-response.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -59,15 +60,20 @@ export class CategoriesController {
   @ApiResponse({
     status: 201,
     description: 'Категория успешно создана',
-    type: CategoryEntity,
+    type: CategoryCreateResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Доступ запрещен' })
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
-  ): Promise<CategoryEntity> {
-    return await this.categoriesService.create(createCategoryDto);
+  ): Promise<CategoryCreateResponseDto> {
+    const createdCategory =
+      await this.categoriesService.create(createCategoryDto);
+    return {
+      id: createdCategory.id,
+      name: createdCategory.name,
+    };
   }
 
   // ✏️ Защищенный маршрут - только для админов
@@ -80,7 +86,7 @@ export class CategoriesController {
   @ApiResponse({
     status: 200,
     description: 'Категория успешно обновлена',
-    type: CategoryResponseDto,
+    type: CategoryUpdateResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
@@ -89,12 +95,12 @@ export class CategoriesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryResponseDto> {
+  ): Promise<CategoryUpdateResponseDto> {
     const updatedEntity: CategoryEntity = await this.categoriesService.update(
       id,
       updateCategoryDto,
     );
-    return updatedEntity as unknown as CategoryResponseDto;
+    return updatedEntity as unknown as CategoryUpdateResponseDto;
   }
 
   // ❌ Защищенный маршрут - только для админов
