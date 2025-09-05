@@ -20,6 +20,7 @@ import { CategoryEntity } from './entities/categories.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CategoryResponseDto } from './dto/category-response.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -63,12 +64,13 @@ export class CategoriesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
+  @HttpCode(200)
   //для swagger
   @ApiOperation({ summary: 'Обновнить категорию (только для админов)' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Категория успешно обновлена',
-    type: CategoryEntity,
+    type: CategoryResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
@@ -77,8 +79,12 @@ export class CategoriesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryEntity> {
-    return await this.categoriesService.update(id, updateCategoryDto);
+  ): Promise<CategoryResponseDto> {
+    const updatedEntity: CategoryEntity = await this.categoriesService.update(
+      id,
+      updateCategoryDto,
+    );
+    return updatedEntity as unknown as CategoryResponseDto;
   }
 
   // ❌ Защищенный маршрут - только для админов
