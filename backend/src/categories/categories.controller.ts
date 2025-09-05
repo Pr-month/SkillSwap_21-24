@@ -20,6 +20,9 @@ import { CategoryEntity } from './entities/categories.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CategoryCreateResponseDto } from './dto/category-create-response.dto';
+import { CategoryListResponseDto } from './dto/category-list-response.dto';
+import { CategoryUpdateResponseDto } from './dto/category-update-response.dto';
 
 @Controller('categories')
 export class CategoriesController {
