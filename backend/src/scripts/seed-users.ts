@@ -1,8 +1,9 @@
 import 'reflect-metadata';
 
-import { AppDataSource } from '../config/typeorm.config';
 import { UserEntity } from '../users/entities/user.entity';
 import { Gender, UserRole } from '../users/enums';
+
+import { createSafeDataSource } from './db.safe';
 
 const data = [
   {
@@ -32,19 +33,31 @@ const data = [
 ];
 
 async function seed() {
-  await AppDataSource.initialize();
-  const userRepo = AppDataSource.getRepository(UserEntity);
+  const ds = createSafeDataSource();
+  await ds.initialize();
+  const qr = ds.createQueryRunner();
+  try {
+    const hasUsers = await qr.hasTable('users');
+    if (!hasUsers) {
+      console.log('⚠️ Таблица users отсутствует. Создаю схему…');
+      await ds.synchronize();
+    }
+  } finally {
+    await qr.release();
+  }
+  try {
+    const repo = ds.getRepository(UserEntity);
+    const testUsers = repo.create(data);
+    await repo.save(testUsers);
 
-  const testUsers = userRepo.create(data);
-  await userRepo.save(testUsers);
-
-  console.log('✅ Тестовые пользователи успешно созданы!');
-  console.log('👥 Созданы пользователи:');
-  testUsers.forEach((user) => {
-    console.log(`   - ${user.name} (${user.email}) - ${user.role}`);
-  });
-
-  await AppDataSource.destroy();
+    console.log('✅ Тестовые пользователи успешно созданы!');
+    console.log('👥 Созданы пользователи:');
+    testUsers.forEach((user) => {
+      console.log(`   - ${user.name} (${user.email}) - ${user.role}`);
+    });
+  } finally {
+    await ds.destroy();
+  }
 }
 
 seed().catch(console.error);
