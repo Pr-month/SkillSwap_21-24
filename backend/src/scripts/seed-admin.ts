@@ -21,8 +21,8 @@ const data = {
 async function seed() {
   const ds = createSafeDataSource();
   await ds.initialize();
-  const qr = ds.createQueryRunner();
 
+  const qr = ds.createQueryRunner();
   try {
     const hasUsers = await qr.hasTable('users');
     if (!hasUsers) {

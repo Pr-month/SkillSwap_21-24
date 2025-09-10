@@ -76,8 +76,8 @@ const data = [
 async function seed() {
   const ds = createSafeDataSource();
   await ds.initialize();
-  const qr = ds.createQueryRunner();
 
+  const qr = ds.createQueryRunner();
   try {
     const hasCategories = await qr.hasTable('categories');
     if (!hasCategories) {

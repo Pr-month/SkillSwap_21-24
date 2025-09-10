@@ -35,6 +35,7 @@ const data = [
 async function seed() {
   const ds = createSafeDataSource();
   await ds.initialize();
+
   const qr = ds.createQueryRunner();
   try {
     const hasUsers = await qr.hasTable('users');
@@ -45,6 +46,7 @@ async function seed() {
   } finally {
     await qr.release();
   }
+
   try {
     const repo = ds.getRepository(UserEntity);
     const testUsers = repo.create(data);
