@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 
-import { AppDataSource } from '../config/typeorm.config';
 import { UserEntity } from '../users/entities/user.entity';
 import { Gender, UserRole } from '../users/enums';
+import { createSafeDataSource } from './db.safe';
 
 const data = {
   name: 'admin',
@@ -18,16 +18,34 @@ const data = {
 };
 
 async function seed() {
-  await AppDataSource.initialize();
-  const userRepo = AppDataSource.getRepository(UserEntity);
+  const ds = createSafeDataSource();
+  await ds.initialize();
+  const qr = ds.createQueryRunner();
+  try {
+    const hasUsers = await qr.hasTable('users');
+    if (!hasUsers) {
+      console.log('⚠️ Таблица users отсутствует. Создаю схему…');
+      await ds.synchronize();
+    }
+  } finally {
+    await qr.release();
+  }
+  try {
+    const repo = ds.getRepository(UserEntity);
+    const exists = await repo.findOne({ where: { name: data.name } });
+    if (exists) {
+      console.log('ℹ️ Админ уже существует — пропуск.');
+      return;
+    }
 
-  const adminUser = userRepo.create(data);
-  await userRepo.save(adminUser);
-
-  console.log(
-    `✅ "${adminUser.name}" (${adminUser.email}) - ${adminUser.role} пользователь создан`,
-  );
-  await AppDataSource.destroy();
+    await repo.save(repo.create(data));
+    console.log(`✅ "${data.name}" (${data.email}) создан`);
+  } finally {
+    await ds.destroy();
+  }
 }
 
-seed().catch(console.error);
+seed().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
