@@ -1,13 +1,8 @@
 import 'reflect-metadata';
-import * as dotenv from 'dotenv';
-dotenv.config({
-  path:
-    process.env.DOTENV_CONFIG_PATH ||
-    (process.env.NODE_ENV === 'test' ? '.env.test' : '.env'),
-});
 
-import { AppDataSource } from '../config/typeorm.config';
 import { CategoryEntity } from '../categories/entities/categories.entity';
+
+import { createSafeDataSource } from './db.safe';
 
 const data = [
   {
@@ -79,27 +74,44 @@ const data = [
 ];
 
 async function seed() {
-  await AppDataSource.initialize();
-  const categoryRepo = AppDataSource.getRepository(CategoryEntity);
+  const ds = createSafeDataSource();
+  await ds.initialize();
+  const qr = ds.createQueryRunner();
 
-  for (const categoryData of data) {
-    const parentCategory = new CategoryEntity();
-    parentCategory.name = categoryData.parent;
-    parentCategory.parent = null;
+  try {
+    const hasCategories = await qr.hasTable('categories');
+    if (!hasCategories) {
+      console.log('⚠️ Таблица categories отсутствует. Создаю схему…');
+      await ds.synchronize();
+    }
+  } finally {
+    await qr.release();
+  }
 
-    const savedParent = await categoryRepo.save(parentCategory);
-    console.log(`Создана категория: ${savedParent.name}`);
+  try {
+    const categoryRepo = ds.getRepository(CategoryEntity);
 
-    if (categoryData.children && Array.isArray(categoryData.children)) {
-      for (const childName of categoryData.children) {
-        const childCategory = new CategoryEntity();
-        childCategory.name = childName;
-        childCategory.parent = savedParent;
+    for (const categoryData of data) {
+      const parentCategory = new CategoryEntity();
+      parentCategory.name = categoryData.parent;
+      parentCategory.parent = null;
 
-        await categoryRepo.save(childCategory);
-        console.log(`  Создана подкатегория: ${childName}`);
+      const savedParent = await categoryRepo.save(parentCategory);
+      console.log(`Создана категория: ${savedParent.name}`);
+
+      if (categoryData.children && Array.isArray(categoryData.children)) {
+        for (const childName of categoryData.children) {
+          const childCategory = new CategoryEntity();
+          childCategory.name = childName;
+          childCategory.parent = savedParent;
+
+          await categoryRepo.save(childCategory);
+          console.log(`  Создана подкатегория: ${childName}`);
+        }
       }
     }
+  } finally {
+    await ds.destroy();
   }
 
   console.log('✅ Категории успешно добавлены!');
