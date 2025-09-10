@@ -48,7 +48,7 @@ async function seed() {
   }
 }
 
-seed().catch((e) => {
-  console.error(e);
+seed().catch((error) => {
+  console.error('❌ Критическая ошибка сидинга:', error);
   process.exit(1);
 });

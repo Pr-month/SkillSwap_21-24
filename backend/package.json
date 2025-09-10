@@ -29,7 +29,7 @@
     "seed:users": "ts-node src/scripts/seed-users.ts",
     "seed:skills":  "ts-node src/scripts/seed-skills.ts",
     "seed:requests": "ts-node -r tsconfig-paths/register src/scripts/seed-requests.ts",
-    "seed:all": "npm run seed:admin && npm run seed:users && npm run seed:categories && npm run seed:skills"
+    "seed:all": "npm run seed:admin && npm run seed:users && npm run seed:categories && npm run seed:skills && npm run seed:requests"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

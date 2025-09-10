@@ -117,4 +117,7 @@ async function seed() {
   console.log('✅ Категории успешно добавлены!');
 }
 
-seed().catch(console.error);
+seed().catch((error) => {
+  console.error('❌ Критическая ошибка сидинга:', error);
+  process.exit(1);
+});

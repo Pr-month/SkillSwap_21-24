@@ -89,10 +89,11 @@ async function seed() {
         owner: vasya,
       },
     ];
-    await skillsRepo.save(skillsData);
+    const skillsDataEntities = skillsRepo.create(skillsData);
+    const savedSkills = await skillsRepo.save(skillsDataEntities);
 
     console.log('✅ Скиллы успешно созданы');
-    skillsData.forEach((skill) => {
+    savedSkills.forEach((skill) => {
       console.log(` - ${skill.title} (владелец: ${skill.owner.name})`);
     });
   } finally {
@@ -100,4 +101,7 @@ async function seed() {
   }
 }
 
-seed().catch(console.error);
+seed().catch((error) => {
+  console.error('❌ Критическая ошибка сидинга:', error);
+  process.exit(1);
+});
