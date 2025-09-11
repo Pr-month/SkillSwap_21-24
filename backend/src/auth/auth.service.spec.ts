@@ -161,7 +161,7 @@ describe('AuthService', () => {
         .mockResolvedValueOnce(tokens.accessToken)
         .mockResolvedValueOnce(tokens.refreshToken);
 
-      const result = await service['_generateTokens'](user);
+      const result = await service['_generateTokens']({ sub: user.id, email: user.email, roles: [user.role] });
 
       expect(result).toEqual(tokens);
       expect(mockJwtService.signAsync).toHaveBeenCalledTimes(2);
