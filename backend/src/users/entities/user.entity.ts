@@ -1,5 +1,3 @@
-import { CategoryEntity } from '../../categories/entities/categories.entity';
-import { SkillEntity } from '../../skills/entities/skills.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,9 +7,13 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { Gender, UserRole } from '../enums';
+
+import { CategoryEntity } from '../../categories/entities/categories.entity';
+import { SkillEntity } from '../../skills/entities/skills.entity';
+import { hashPassword } from '../../common/hash-password';
 import { RequestEntity } from '../../requests/entities/request.entity';
+
+import { Gender, UserRole } from '../enums';
 
 @Entity('users')
 export class UserEntity {
@@ -76,7 +78,7 @@ export class UserEntity {
 
   @BeforeInsert()
   async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
+    this.password = await hashPassword(this.password);
   }
 
   @OneToMany(() => RequestEntity, (request) => request.sender)
