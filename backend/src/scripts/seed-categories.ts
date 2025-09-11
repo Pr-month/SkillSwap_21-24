@@ -1,10 +1,12 @@
-import { CategoryEntity } from '../categories/entities/categories.entity';
-import { DataSource } from 'typeorm';
+import 'reflect-metadata';
 
-// Данные для сидинга
-const CategoriesData = [
+import { CategoryEntity } from '../categories/entities/categories.entity';
+
+import { createSafeDataSource } from './db.safe';
+
+const data = [
   {
-    name: 'Творчество и искусство',
+    parent: 'Творчество и искусство',
     children: [
       'Управление командой',
       'Маркетинг и реклама',
@@ -17,7 +19,7 @@ const CategoriesData = [
     ],
   },
   {
-    name: 'IT и программирование',
+    parent: 'IT и программирование',
     children: [
       'Frontend',
       'Backend',
@@ -27,11 +29,11 @@ const CategoriesData = [
     ],
   },
   {
-    name: 'Дизайн и UX/UI',
+    parent: 'Дизайн и UX/UI',
     children: ['Графический дизайн', 'UX/UI', 'Motion-дизайн', 'Web-дизайн'],
   },
   {
-    name: 'Финансы и бухгалтерия',
+    parent: 'Финансы и бухгалтерия',
     children: [
       'Личная финансовая грамотность',
       'Бухгалтерия и налоги',
@@ -39,15 +41,15 @@ const CategoriesData = [
     ],
   },
   {
-    name: 'Маркетинг и продажи',
+    parent: 'Маркетинг и продажи',
     children: ['Таргетинг', 'Контекстная реклама', 'SEO', 'Email-маркетинг'],
   },
   {
-    name: 'Образование и обучение',
+    parent: 'Образование и обучение',
     children: ['Методика преподавания', 'Онлайн-курсы', 'Педагогика'],
   },
   {
-    name: 'Языки',
+    parent: 'Языки',
     children: [
       'Английский язык',
       'Немецкий язык',
@@ -58,7 +60,7 @@ const CategoriesData = [
     ],
   },
   {
-    name: 'Музыкальные инструменты',
+    parent: 'Музыкальные инструменты',
     children: [
       'Гитара',
       'Фортепиано',
@@ -71,47 +73,32 @@ const CategoriesData = [
   },
 ];
 
-// Экспортируем функцию сидинга, принимающую dataSource
-export async function seedCategories(dataSource?: DataSource) {
-  let useDataSource = dataSource;
-  let needToInitialize = false;
+async function seed() {
+  const ds = createSafeDataSource();
+  await ds.initialize();
 
-  // Если dataSource не передан, создаем новый
-  if (!useDataSource) {
-    const { AppDataSource } = await import('../config/typeorm.config');
-    useDataSource = AppDataSource;
-    needToInitialize = true;
-  }
-
-  if (needToInitialize) {
-    await useDataSource.initialize();
-  }
-
-  const categoryRepo = useDataSource.getRepository(CategoryEntity);
-
-  const existing = await categoryRepo.count();
-  if (existing > 0) {
-    console.log('Категории уже существуют в базе данных. Сидинг пропущен.');
-    if (needToInitialize) {
-      await useDataSource.destroy();
+  const qr = ds.createQueryRunner();
+  try {
+    const hasCategories = await qr.hasTable('categories');
+    if (!hasCategories) {
+      console.log('⚠️ Таблица categories отсутствует. Создаю схему…');
+      await ds.synchronize();
     }
-    return;
+  } finally {
+    await qr.release();
   }
 
   try {
-    console.log('Начинаем сидинг категорий...');
+    const categoryRepo = ds.getRepository(CategoryEntity);
 
-    // Создаем категории и подкатегории
-    for (const categoryData of CategoriesData) {
-      // Создаем основную категорию
+    for (const categoryData of data) {
       const parentCategory = new CategoryEntity();
-      parentCategory.name = categoryData.name;
+      parentCategory.name = categoryData.parent;
       parentCategory.parent = null;
 
       const savedParent = await categoryRepo.save(parentCategory);
       console.log(`Создана категория: ${savedParent.name}`);
 
-      // Создаем подкатегории
       if (categoryData.children && Array.isArray(categoryData.children)) {
         for (const childName of categoryData.children) {
           const childCategory = new CategoryEntity();
@@ -123,22 +110,14 @@ export async function seedCategories(dataSource?: DataSource) {
         }
       }
     }
-
-    console.log('✅ Сидинг категорий успешно завершен!');
-  } catch (error) {
-    console.error('❌ Ошибка при выполнении сидинга:', error);
-    throw error;
   } finally {
-    if (needToInitialize) {
-      await useDataSource.destroy();
-    }
+    await ds.destroy();
   }
+
+  console.log('✅ Категории успешно добавлены!');
 }
 
-// Если файл запущен напрямую (не как модуль)
-if (require.main === module) {
-  seedCategories().catch((e) => {
-    console.error('❌ Критическая ошибка сидинга:', e);
-    process.exit(1);
-  });
-}
+seed().catch((error) => {
+  console.error('❌ Критическая ошибка сидинга:', error);
+  process.exit(1);
+});
