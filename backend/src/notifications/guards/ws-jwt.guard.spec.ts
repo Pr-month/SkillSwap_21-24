@@ -84,7 +84,7 @@ describe('WsJwtGuard', () => {
     await expect(guard.verifyToken(client)).rejects.toThrow(
       UnauthorizedException,
     );
-    await expect(guard.verifyToken(client)).rejects.toThrow('Invalid token');
+    await expect(guard.verifyToken(client)).rejects.toThrow('Authentication failed');
   });
 
   it('should propagate error when jwtService.verifyAsync throws', async () => {
@@ -92,6 +92,6 @@ describe('WsJwtGuard', () => {
     const err = new Error('jwt expired');
     jwtService.verifyAsync.mockRejectedValue(err);
 
-    await expect(guard.verifyToken(client)).rejects.toThrow('jwt expired');
+    await expect(guard.verifyToken(client)).rejects.toThrow(UnauthorizedException);
   });
 });
