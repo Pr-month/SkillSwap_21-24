@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { UserEntity } from '../users/entities/user.entity';
 
 import { createSafeDataSource } from './db.safe';
-import { usersSeedData as data } from './seed-users-data';
+import { adminSeedData as data } from './seed-admin-data';
 
 async function seed() {
   const ds = createSafeDataSource();
@@ -22,14 +22,14 @@ async function seed() {
 
   try {
     const repo = ds.getRepository(UserEntity);
-    const testUsers = repo.create(data);
-    await repo.save(testUsers);
+    const exists = await repo.findOne({ where: { name: data.name } });
+    if (exists) {
+      console.log('ℹ️ Админ уже существует — пропуск.');
+      return;
+    }
 
-    console.log('✅ Тестовые пользователи успешно созданы!');
-    console.log('👥 Созданы пользователи:');
-    testUsers.forEach((user) => {
-      console.log(`   - ${user.name} (${user.email}) - ${user.role}`);
-    });
+    await repo.save(repo.create(data));
+    console.log(`✅ "${data.name}" (${data.email}) создан`);
   } finally {
     await ds.destroy();
   }

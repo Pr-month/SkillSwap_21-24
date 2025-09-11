@@ -7,6 +7,7 @@ import {
   PayloadTooLargeException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { MulterError } from 'multer';
 import { EntityNotFoundError } from 'typeorm';
 
 @Catch()
@@ -23,7 +24,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       statusCode = HttpStatus.NOT_FOUND;
       message = exception.message || 'Resource not found';
     }
-
+    if (exception instanceof MulterError) {
+      statusCode = HttpStatus.PAYLOAD_TOO_LARGE;
+      message = exception.message; // обычно "File too large"
+    }
     if (
       exception instanceof Error &&
       'code' in exception &&
@@ -42,9 +46,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
       statusCode = exception.getStatus();
       message = exception.message;
     }
-
-    console.error(`An error occurred in ${req.method} ${req.url}:`, exception);
-
     return res.status(statusCode).json({
       timestamp: new Date().toISOString(),
       path: req.url,

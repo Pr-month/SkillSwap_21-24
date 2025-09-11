@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
 import { SkillEntity } from '../skills/entities/skills.entity';
+import { hashPassword } from '../common/hash-password';
+
 import { ResponceUserDTO } from './dto/user.dto';
 import { UserEntity } from './entities/user.entity';
 
-const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
+export const toResponseUserDTO = (user: UserEntity): ResponceUserDTO => {
   return plainToInstance(ResponceUserDTO, user);
 };
 
@@ -61,7 +62,7 @@ export class UsersService {
     if (!user) {
       return null;
     }
-    user.password = await bcrypt.hash(password, 10);
+    user.password = await hashPassword(password);
 
     const updatedUser = await this.usersRepository.save(user);
     return toResponseUserDTO(updatedUser);
@@ -69,7 +70,10 @@ export class UsersService {
 
   // Получение данных пользователя по ID
   async getUserById(id: number): Promise<ResponceUserDTO | null> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['favoriteSkills'],
+    });
     return user ? toResponseUserDTO(user) : null;
   }
 
@@ -84,9 +88,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const skill = await this.skillsRepository.findOneOrFail({
+    const skill = await this.skillsRepository.findOne({
       where: { id: skillId },
     });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
 
     // Проверяем, не добавлен ли уже навык в избранное
     if (!user.favoriteSkills.some((favSkill) => favSkill.id === skillId)) {
@@ -109,10 +117,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Проверяем, существует ли навык
-    await this.skillsRepository.findOneOrFail({
+    const skill = await this.skillsRepository.findOne({
       where: { id: skillId },
     });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
 
     // Фильтруем массив favoriteSkills, исключая навык с указанным ID
     user.favoriteSkills = user.favoriteSkills.filter(

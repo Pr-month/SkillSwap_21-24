@@ -16,6 +16,8 @@ export class CreateUserDTO {
     example: 'strongPassword123',
     description: 'Пароль пользователя',
   })
+  @IsString()
+  password: string;
   @ApiProperty({
     example: 'Люблю программирование',
     description: 'Информация о пользователе',

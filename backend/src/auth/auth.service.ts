@@ -11,6 +11,7 @@ import { AppConfigType } from '../config/config.type';
 import { configuration } from '../config/configuration';
 import { SkillEntity } from '../skills/entities/skills.entity';
 import { UserEntity } from '../users/entities/user.entity';
+import { JwtPayload } from './auth.types';
 import { UserRole } from '../users/enums';
 import { Repository } from 'typeorm';
 import { CreateUserDTO, LoginResponseDTO, LoginUserDTO } from './dto/user.dto';
@@ -30,8 +31,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async _generateTokens({ id, email, role }: UserEntity) {
-    const payload = { sub: id, email, role };
+  async _generateTokens({ sub, email, roles }: JwtPayload) {
+    const payload = { sub, email, roles };
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.config.jwt.jwtSecret,
@@ -66,7 +67,11 @@ export class AuthService {
     });
     await this.userRepository.save(user);
     // Генерим токены
-    const { accessToken, refreshToken } = await this._generateTokens(user);
+    const { accessToken, refreshToken } = await this._generateTokens({
+      sub: user.id,
+      email: user.email,
+      roles: [user.role],
+    });
     // Сохраняем refresh токен в бд
     await this.userRepository.update(user.id, {
       refreshToken,
@@ -84,7 +89,7 @@ export class AuthService {
       where: {
         email: email,
       },
-      select: ['id', 'email', 'password'],
+      select: ['id', 'email', 'password', 'role'],
     });
     if (!user) {
       throw new UnauthorizedException('Incorrectly entered email address');
@@ -93,7 +98,11 @@ export class AuthService {
     if (!ok) {
       throw new UnauthorizedException('Incorrectly entered password');
     }
-    const { accessToken, refreshToken } = await this._generateTokens(user);
+    const { accessToken, refreshToken } = await this._generateTokens({
+      sub: user.id,
+      email: user.email,
+      roles: [user.role],
+    });
     await this.userRepository.update(user.id, {
       refreshToken,
     });
@@ -131,7 +140,11 @@ export class AuthService {
 
   async refreshToken(token: string): Promise<LoginResponseDTO> {
     const user = await this.deleteRefreshToken(token);
-    const { accessToken, refreshToken } = await this._generateTokens(user);
+    const { accessToken, refreshToken } = await this._generateTokens({
+      sub: user.id,
+      email: user.email,
+      roles: [user.role],
+    });
     await this.userRepository.update(user.id, {
       refreshToken,
     });

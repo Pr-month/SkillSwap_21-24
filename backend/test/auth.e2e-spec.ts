@@ -5,27 +5,30 @@ import { AppModule } from '../src/app.module';
 import { App } from 'supertest/types';
 import { Gender } from '../src/users/enums';
 import { LoginResponseDTO } from '../src/auth/dto/user.dto';
+import { adminSeedData as mockAdminData } from '../src/scripts/seed-admin-data';
+import { Server } from 'http';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication<App>;
+  let server: Server;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+
     app = moduleFixture.createNestApplication();
     await app.init();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    server = app.getHttpServer() as Server;
   });
 
   afterAll(async () => {
     await app.close();
-    (console.error as jest.Mock).mockRestore();
   });
 
   describe('/auth/register (POST)', () => {
     it('should login seeded admin user', async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post('/auth/register')
         .send({
           name: 'ivan',
@@ -45,7 +48,7 @@ describe('AuthController (e2e)', () => {
       expect(res.body).toHaveProperty('refreshToken');
     });
     it('should reject no category', async () => {
-      return request(app.getHttpServer())
+      return request(server)
         .post('/auth/register')
         .send({
           name: 'vasya',
@@ -62,7 +65,7 @@ describe('AuthController (e2e)', () => {
         .expect(404);
     });
     it('should reject same email', async () => {
-      return request(app.getHttpServer())
+      return request(server)
         .post('/auth/register')
         .send({
           name: 'ivan',
@@ -82,9 +85,9 @@ describe('AuthController (e2e)', () => {
 
   describe('/auth/login (POST)', () => {
     it('should login seeded admin user', async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post('/auth/login')
-        .send({ email: 'vasya@mail.ru', password: 'admin123' })
+        .send({ email: mockAdminData.email, password: mockAdminData.password })
         .expect(200);
 
       expect(res.body).toHaveProperty('accessToken');
@@ -92,7 +95,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should reject invalid credentials', async () => {
-      return request(app.getHttpServer())
+      return request(server)
         .post('/auth/login')
         .send({ email: 'vasya@mail.ru', password: 'wrongpass' })
         .expect(401);
@@ -100,13 +103,13 @@ describe('AuthController (e2e)', () => {
   });
   describe('POST /auth/refresh', () => {
     it('should return new access token for valid refresh token', async () => {
-      const loginRes = await request(app.getHttpServer())
+      const loginRes = await request(server)
         .post('/auth/login')
-        .send({ email: 'ivan@mail.ru', password: 'password123' })
+        .send({ email: mockAdminData.email, password: mockAdminData.password })
         .expect(200);
       const body = loginRes.body as LoginResponseDTO;
       const refreshToken = body.refreshToken;
-      const res = await request(app.getHttpServer())
+      const res = await request(server)
         .post('/auth/refresh')
         .set('Authorization', `Bearer ${refreshToken}`)
         .expect(200);
@@ -116,27 +119,27 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return 404 for expired refresh token', async () => {
-      const loginRes = await request(app.getHttpServer())
+      const loginRes = await request(server)
         .post('/auth/login')
-        .send({ email: 'ivan@mail.ru', password: 'password123' })
+        .send({ email: mockAdminData.email, password: mockAdminData.password })
         .expect(200);
       const body = loginRes.body as LoginResponseDTO;
       const refreshToken = body.refreshToken;
-      await request(app.getHttpServer())
+      await request(server)
         .post('/auth/logout')
         .set('Authorization', `Bearer ${refreshToken}`)
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({ success: true });
         });
-      await request(app.getHttpServer())
+      await request(server)
         .post('/auth/refresh')
         .set('Authorization', `Bearer ${refreshToken}`)
         .expect(404);
     });
 
     it('should return 401 for invalid refresh token', async () => {
-      await request(app.getHttpServer())
+      await request(server)
         .post('/auth/refresh')
         .set('Authorization', `Bearer invalidtoken`)
         .expect(401);
@@ -144,13 +147,13 @@ describe('AuthController (e2e)', () => {
   });
   describe('/auth/logout (POST)', () => {
     it('should logout user with valid refresh token', async () => {
-      const loginRes = await request(app.getHttpServer())
+      const loginRes = await request(server)
         .post('/auth/login')
-        .send({ email: 'ivan@mail.ru', password: 'password123' })
+        .send({ email: mockAdminData.email, password: mockAdminData.password })
         .expect(200);
       const body = loginRes.body as LoginResponseDTO;
       const refreshToken = body.refreshToken;
-      await request(app.getHttpServer())
+      await request(server)
         .post('/auth/logout')
         .set('Authorization', `Bearer ${refreshToken}`)
         .expect(200)
@@ -160,7 +163,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return 401 for invalid refresh token', async () => {
-      await request(app.getHttpServer())
+      await request(server)
         .post('/auth/logout')
         .set('Authorization', `Bearer invalidtoken`)
         .expect(401);

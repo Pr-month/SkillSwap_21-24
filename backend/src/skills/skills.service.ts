@@ -43,6 +43,10 @@ export class SkillsService {
 
     const totalPages = Math.ceil(total / limit);
 
+    if (total === 0) {
+      throw new NotFoundException('No skills found');
+    }
+
     if (page > totalPages && totalPages !== 0) {
       throw new NotFoundException('Page not found');
     }

@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { configuration } from './config/configuration';
 import { AppConfigType } from './config/config.type';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { SkillsModule } from './skills/skills.module';
@@ -23,7 +22,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 @Module({
   imports: [
     WinstonModule.forRoot(winstonConfig),
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [configuration.KEY],
@@ -49,7 +51,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     RequestsModule,
     NotificationsModule,
   ],
-  controllers: [AppController],
   providers: [
     AppService,
     JwtStrategy,

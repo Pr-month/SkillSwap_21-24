@@ -1,16 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { AppModule } from '../src/app.module';
-import { UserEntity } from '../src/users/entities/user.entity';
+import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Server } from 'http';
+import * as request from 'supertest';
 import { Repository } from 'typeorm';
-import { Application } from 'express';
-import { seedCategories } from '../src/scripts/seed-categories';
-import { seedUsers } from '../src/scripts/seed-users';
-import { DataSource } from 'typeorm';
+import { AppModule } from '../src/app.module';
+import { adminSeedData as adminData } from '../src/scripts/seed-admin-data';
+import { usersSeedData as usersData } from '../src/scripts/seed-users-data';
+import { UserEntity } from '../src/users/entities/user.entity';
 
 // Определяем интерфейсы для типизации ответов
 interface ITestCategory {
@@ -22,9 +21,9 @@ interface ITestCategory {
 
 describe('CategoriesController (e2e)', () => {
   let app: INestApplication;
+  let server: Server;
   let jwtService: JwtService;
   let userRepository: Repository<UserEntity>;
-  let dataSource: DataSource;
   let adminToken: string;
   let userToken: string;
   let testAdminUser: UserEntity | null;
@@ -38,31 +37,19 @@ describe('CategoriesController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
+    server = app.getHttpServer() as Server;
     // 2. Получаем необходимые зависимости
     jwtService = moduleFixture.get<JwtService>(JwtService);
     userRepository = moduleFixture.get<Repository<UserEntity>>(
       getRepositoryToken(UserEntity),
     );
-    dataSource = moduleFixture.get<DataSource>(DataSource);
-
-    // 3. Запускаем скрипты сидинга, передавая существующий dataSource
-    console.log('Запуск скриптов сидинга...');
-    await seedCategories(dataSource); // Используем тот же dataSource
-    await seedUsers(dataSource); // Используем тот же dataSource
-    console.log('Скрипты сидинга выполнены.');
 
     // 4. Получаем созданных пользователей
     testAdminUser = await userRepository.findOne({
-      where: { email: 'vasya@mail.ru' },
+      where: { email: adminData.email },
     });
     testRegularUser = await userRepository.findOne({
-      where: { email: 'ivan@mail.ru' },
-    });
-
-    console.log('Найденные пользователи:', {
-      admin: testAdminUser?.email,
-      user: testRegularUser?.email,
+      where: { email: usersData[0].email },
     });
 
     if (!testAdminUser || !testRegularUser) {
@@ -89,9 +76,7 @@ describe('CategoriesController (e2e)', () => {
 
   describe('GET /categories', () => {
     it('should return array of categories with children', async () => {
-      const response = await request(app.getHttpServer() as Application)
-        .get('/categories')
-        .expect(200);
+      const response = await request(server).get('/categories').expect(200);
 
       // Проверяем, что ответ - массив
       expect(Array.isArray(response.body)).toBe(true);
@@ -118,9 +103,7 @@ describe('CategoriesController (e2e)', () => {
     });
 
     it('should return categories with proper parent-child relationships', async () => {
-      const response = await request(app.getHttpServer() as Application)
-        .get('/categories')
-        .expect(200);
+      const response = await request(server).get('/categories').expect(200);
 
       // Явно типизируем ответ
       const categories: ITestCategory[] = response.body as ITestCategory[];
@@ -151,9 +134,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should create child category with valid parentId', async () => {
       // Сначала получаем ID существующей категории
-      const categoriesResponse = await request(
-        app.getHttpServer() as Application,
-      )
+      const categoriesResponse = await request(server)
         .get('/categories')
         .expect(200);
 
@@ -162,7 +143,7 @@ describe('CategoriesController (e2e)', () => {
       const parentId = categories.length > 0 ? categories[0].id : null;
 
       if (parentId) {
-        await request(app.getHttpServer() as Application)
+        await request(server)
           .post('/categories')
           .set('Authorization', `Bearer ${adminToken}`)
           .send({
@@ -174,14 +155,14 @@ describe('CategoriesController (e2e)', () => {
     });
 
     it('should fail to create category without authentication', async () => {
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .post('/categories')
         .send(createCategoryDto)
         .expect(401);
     });
 
     it('should fail to create category with user token (insufficient permissions)', async () => {
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .post('/categories')
         .set('Authorization', `Bearer ${userToken}`)
         .send(createCategoryDto)
@@ -193,7 +174,7 @@ describe('CategoriesController (e2e)', () => {
       const specialName =
         'Category with spéciål chàräctërs & symbols!@#$%^&*()';
 
-      const response = await request(app.getHttpServer() as Application)
+      const response = await request(server)
         .post('/categories')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: specialName })
@@ -209,9 +190,7 @@ describe('CategoriesController (e2e)', () => {
 
     beforeEach(async () => {
       // Получаем ID категории для обновления
-      const response = await request(app.getHttpServer() as Application)
-        .get('/categories')
-        .expect(200);
+      const response = await request(server).get('/categories').expect(200);
 
       const categories: ITestCategory[] = response.body as ITestCategory[];
       categoryId = categories.length > 0 ? categories[0].id : null;
@@ -223,7 +202,7 @@ describe('CategoriesController (e2e)', () => {
           name: 'Updated Category Name',
         };
 
-        const response = await request(app.getHttpServer() as Application)
+        const response = await request(server)
           .patch(`/categories/${categoryId}`)
           .set('Authorization', `Bearer ${adminToken}`)
           .send(updateDto)
@@ -241,7 +220,7 @@ describe('CategoriesController (e2e)', () => {
           name: 'Partially Updated Name',
         };
 
-        const response = await request(app.getHttpServer() as Application)
+        const response = await request(server)
           .patch(`/categories/${categoryId}`)
           .set('Authorization', `Bearer ${adminToken}`)
           .send(updateDto)
@@ -254,7 +233,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should fail to update category without authentication', async () => {
       if (categoryId) {
-        await request(app.getHttpServer() as Application)
+        await request(server)
           .patch(`/categories/${categoryId}`)
           .send({ name: 'Updated Name' })
           .expect(401);
@@ -263,7 +242,7 @@ describe('CategoriesController (e2e)', () => {
 
     it('should fail to update category with user token (insufficient permissions)', async () => {
       if (categoryId) {
-        await request(app.getHttpServer() as Application)
+        await request(server)
           .patch(`/categories/${categoryId}`)
           .set('Authorization', `Bearer ${userToken}`)
           .send({ name: 'Updated Name' })
@@ -272,7 +251,7 @@ describe('CategoriesController (e2e)', () => {
     });
 
     it('should fail to update non-existent category', async () => {
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .patch('/categories/99999')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'Updated Name' })
@@ -285,7 +264,7 @@ describe('CategoriesController (e2e)', () => {
 
     beforeEach(async () => {
       // Создаем категорию для удаления
-      const response = await request(app.getHttpServer() as Application)
+      const response = await request(server)
         .post('/categories')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
@@ -299,29 +278,25 @@ describe('CategoriesController (e2e)', () => {
 
     it('should delete category successfully with admin token', async () => {
       if (categoryId) {
-        await request(app.getHttpServer() as Application)
+        await request(server)
           .delete(`/categories/${categoryId}`)
           .set('Authorization', `Bearer ${adminToken}`)
-          .expect(200);
+          .expect(204);
 
         // Проверяем, что категория действительно удалена
-        await request(app.getHttpServer() as Application)
-          .get(`/categories/${categoryId}`)
-          .expect(404);
+        await request(server).get(`/categories/${categoryId}`).expect(404);
       }
     });
 
     it('should fail to delete category without authentication', async () => {
       if (categoryId) {
-        await request(app.getHttpServer() as Application)
-          .delete(`/categories/${categoryId}`)
-          .expect(401);
+        await request(server).delete(`/categories/${categoryId}`).expect(401);
       }
     });
 
     it('should fail to delete category with user token (insufficient permissions)', async () => {
       if (categoryId) {
-        await request(app.getHttpServer() as Application)
+        await request(server)
           .delete(`/categories/${categoryId}`)
           .set('Authorization', `Bearer ${userToken}`)
           .expect(403);
@@ -329,7 +304,7 @@ describe('CategoriesController (e2e)', () => {
     });
 
     it('should fail to delete non-existent category', async () => {
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .delete('/categories/99999')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
@@ -338,15 +313,13 @@ describe('CategoriesController (e2e)', () => {
 
   describe('Error cases', () => {
     it('should return 404 for non-existent category GET request', async () => {
-      await request(app.getHttpServer() as Application)
-        .get('/categories/99999')
-        .expect(404);
+      await request(server).get('/categories/99999').expect(404);
     });
   });
 
   describe('Security tests', () => {
     it('should reject requests with invalid JWT token', async () => {
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .post('/categories')
         .set('Authorization', 'Bearer invalid-token')
         .send({ name: 'Test Category' })
@@ -362,7 +335,7 @@ describe('CategoriesController (e2e)', () => {
       // Ждем немного, чтобы токен точно истек
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .post('/categories')
         .set('Authorization', `Bearer ${expiredToken}`)
         .send({ name: 'Test Category' })
@@ -370,7 +343,7 @@ describe('CategoriesController (e2e)', () => {
     });
 
     it('should reject requests with malformed Authorization header', async () => {
-      await request(app.getHttpServer() as Application)
+      await request(server)
         .post('/categories')
         .set('Authorization', 'InvalidFormat')
         .send({ name: 'Test Category' })
