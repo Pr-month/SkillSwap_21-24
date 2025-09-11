@@ -14,7 +14,7 @@ import { SkillEntity } from '../skills/entities/skills.entity';
 import { UnauthorizedException } from '@nestjs/common';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
-const NOTIFICATIONS_PORT = Number(process.env.PORT_NOTIFICATIONS) || 3001;
+const NOTIFICATIONS_PORT = Number(process.env.PORT_NOTIFICATIONS) || 4001;
 
 @WebSocketGateway(NOTIFICATIONS_PORT, {
   cors: { origin: '*' },

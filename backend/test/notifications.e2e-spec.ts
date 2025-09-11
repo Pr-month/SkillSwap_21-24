@@ -32,7 +32,6 @@ describe('Notifications (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
     gateway = app.get(NotificationsGateway);
 
     // Подменяем socket.io сервер типобезопасным мок-объектом

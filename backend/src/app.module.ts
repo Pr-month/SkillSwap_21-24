@@ -22,7 +22,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 @Module({
   imports: [
     WinstonModule.forRoot(winstonConfig),
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [configuration.KEY],

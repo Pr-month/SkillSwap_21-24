@@ -6,12 +6,12 @@ import { AuthService } from './auth.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { SkillEntity } from '../skills/entities/skills.entity';
 import { CategoryEntity } from '../categories/entities/categories.entity';
-import { CreateUserDTO } from '../users/dto/user.dto';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserRole, Gender } from '../users/enums';
 import { configuration } from '../config/configuration';
 import { AppConfigType } from '../config/config.type';
 import { Repository } from 'typeorm';
+import { CreateUserDTO } from './dto/user.dto';
 
 interface LoginUserDTO {
   email: string;
@@ -161,7 +161,11 @@ describe('AuthService', () => {
         .mockResolvedValueOnce(tokens.accessToken)
         .mockResolvedValueOnce(tokens.refreshToken);
 
-      const result = await service['_generateTokens']({ sub: user.id, email: user.email, roles: [user.role] });
+      const result = await service['_generateTokens']({
+        sub: user.id,
+        email: user.email,
+        roles: [user.role],
+      });
 
       expect(result).toEqual(tokens);
       expect(mockJwtService.signAsync).toHaveBeenCalledTimes(2);
@@ -179,7 +183,7 @@ describe('AuthService', () => {
       city: 'Moscow',
       gender: Gender.MALE,
       avatar: 'avatar.jpg',
-      role: UserRole.USER,
+      category: 1,
     };
 
     it('should create user successfully', async () => {

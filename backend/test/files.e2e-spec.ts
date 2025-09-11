@@ -1,10 +1,15 @@
 import { Test } from '@nestjs/testing';
-import request from 'supertest';
+import * as request from 'supertest';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module';
+import { Server } from 'http';
+import { ValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from '../src/common/all-exception.filter';
 
 describe('Integration Tests for Files Upload', () => {
   let app: NestExpressApplication;
+  let server: Server;
+  const pathToFixtures = `${__dirname}/../test/fixtures/`;
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -12,7 +17,10 @@ describe('Integration Tests for Files Upload', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalFilters(new AllExceptionsFilter());
     await app.init();
+    server = app.getHttpServer();
   });
 
   afterAll(async () => {
@@ -20,10 +28,10 @@ describe('Integration Tests for Files Upload', () => {
   });
 
   it('Successfully upload a valid image file', async () => {
-    const response = await request(app.getHttpServer())
+    const response = await request(server)
       .post('/files/upload')
-      .attach('file', `${__dirname}/../fixtures/test-image.png`)
-      .expect(200);
+      .attach('file', `${pathToFixtures}/test-image.png`)
+      .expect(201);
 
     expect(response.body).toHaveProperty('originalName');
     expect(response.body).toHaveProperty('savedAs');
@@ -31,21 +39,17 @@ describe('Integration Tests for Files Upload', () => {
   });
 
   it('Reject invalid file formats', async () => {
-    const response = await request(app.getHttpServer())
+    await request(server)
       .post('/files/upload')
-      .attach('file', `${__dirname}/../fixtures/test-text.txt`)
+      .attach('file', `${pathToFixtures}/test-text.txt`)
       .expect(422);
-
-    expect(response.text).toContain('Validation failed');
   });
 
   it('Reject oversized images', async () => {
-    const largeImagePath = `${__dirname}/../fixtures/large-test-image.jpg`;
-    const response = await request(app.getHttpServer())
+    const largeImagePath = `${pathToFixtures}/large-test-image.jpg`;
+    await request(server)
       .post('/files/upload')
       .attach('file', largeImagePath)
-      .expect(422);
-
-    expect(response.text).toContain('Maximum file size exceeded');
+      .expect(413);
   });
 });

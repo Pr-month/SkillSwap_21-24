@@ -1,22 +1,9 @@
 import 'reflect-metadata';
 
 import { UserEntity } from '../users/entities/user.entity';
-import { Gender, UserRole } from '../users/enums';
 
 import { createSafeDataSource } from './db.safe';
-
-const data = {
-  name: 'admin',
-  email: 'admin@mail.ru',
-  password: 'admin',
-  about: 'administrator',
-  birthdate: new Date('2000-01-01'),
-  city: 'Moscow',
-  gender: Gender.MALE,
-  avatar: 'admin.png',
-  role: UserRole.ADMIN,
-  refreshToken: '',
-};
+import { adminSeedData as data } from './seed-admin-data';
 
 async function seed() {
   const ds = createSafeDataSource();

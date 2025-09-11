@@ -11,10 +11,9 @@ const typeOrmConfig: DataSourceOptions = {
   port: Number(process.env.DB_PORT),
   username: process.env.POSTGRES_USER || 'postgres',
   password: process.env.POSTGRES_PASSWORD || 'postgres',
-  database: process.env.POSTGRES_DB || 'SkillSwapDB',
+  database: process.env.POSTGRES_DB || 'skillswap',
   entities: [join(__dirname, '../**/*.entity.{ts,js}')],
   migrations: ['src/migrations/*.ts'],
-  dropSchema: process.env.TYPEORM_SYNCHRONIZE === 'true',
   synchronize: process.env.NODE_ENV !== 'production',
 };
 

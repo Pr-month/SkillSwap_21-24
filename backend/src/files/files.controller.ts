@@ -1,10 +1,11 @@
 import {
   Controller,
   Post,
+  UnprocessableEntityException,
   UploadedFile,
   UseInterceptors,
-  HttpStatus,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
   ApiConsumes,
@@ -13,8 +14,6 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ParseFilePipe } from '@nestjs/common';
 import { FilesService } from './files.service';
 
 @ApiTags('Файлы')
@@ -41,15 +40,12 @@ export class FilesController {
   })
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(
-    @UploadedFile(
-      new ParseFilePipe({
-        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        fileIsRequired: true,
-      }),
-    )
-    file: Express.Multer.File,
-  ) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      throw new UnprocessableEntityException('Invalid file type');
+    }
+
     return this.filesService.handleUpload(file);
   }
 }

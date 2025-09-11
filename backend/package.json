@@ -18,7 +18,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "cross-env NODE_ENV=test npm run seed && jest --config ./test/jest-e2e.json",
+    "test:e2e": "cross-env NODE_ENV=test npm run cleanup:db && cross-env NODE_ENV=test npm run seed:all &&  jest --config ./test/jest-e2e.json --runInBand",
     "test:e2e:categories": "npm run test:e2e -- test/categories.e2e-spec.ts",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
     "migration:generate": "npm run typeorm -- migration:generate src/migrations/InitialMigration -d typeorm.config.ts",
@@ -27,9 +27,10 @@
     "seed:admin": "ts-node src/scripts/seed-admin.ts",
     "seed:categories": "ts-node src/scripts/seed-categories.ts",
     "seed:users": "ts-node src/scripts/seed-users.ts",
-    "seed:skills":  "ts-node src/scripts/seed-skills.ts",
+    "seed:skills": "ts-node src/scripts/seed-skills.ts",
     "seed:requests": "ts-node -r tsconfig-paths/register src/scripts/seed-requests.ts",
-    "seed:all": "npm run seed:admin && npm run seed:users && npm run seed:categories && npm run seed:skills && npm run seed:requests"
+    "seed:all": "npm run seed:admin && npm run seed:users && npm run seed:categories && npm run seed:skills && npm run seed:requests",
+    "cleanup:db": "ts-node src/scripts/cleanup-db.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
