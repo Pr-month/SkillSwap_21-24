@@ -15,19 +15,6 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-
-import { ReqWithUser } from '../auth/auth.types';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-import { SkillsService } from './skills.service';
-import { SkillEntity } from './entities/skills.entity';
-import {
-  CreateSkillDTO,
-  UpdateSkillDTO,
-  SkillResponseDto,
-  PaginationQueryDto,
-  SkillListResponseDto,
-} from './dto/skill.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -41,6 +28,19 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+
+import { ReqWithUser } from '../auth/auth.types';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+import { SkillsService } from './skills.service';
+import { SkillEntity } from './entities/skills.entity';
+import {
+  CreateSkillDTO,
+  UpdateSkillDTO,
+  SkillResponseDto,
+  PaginationQueryDto,
+  SkillListResponseDto,
+} from './dto/skill.dto';
 
 export type Paginated<T> = { data: T[]; page: number; totalPages: number };
 @ApiTags('skills')
