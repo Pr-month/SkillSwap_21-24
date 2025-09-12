@@ -26,15 +26,20 @@ import {
   UpdateSkillDTO,
   SkillResponseDto,
   PaginationQueryDto,
+  SkillListResponseDto,
 } from './dto/skill.dto';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 export type Paginated<T> = { data: T[]; page: number; totalPages: number };
@@ -47,9 +52,10 @@ export class SkillsController {
   @Get()
   @ApiOperation({ summary: 'Список скиллов (с пагинацией)' })
   @ApiOkResponse({
-    type: [SkillResponseDto],
-    description: 'Получение всех скиллов',
+    type: SkillListResponseDto,
+    description: 'Пагинированный список скиллов',
   })
+  @ApiBadRequestResponse({ description: 'Некорректные параметры пагинации' })
   @UsePipes(new ValidationPipe({ transform: true }))
   @HttpCode(HttpStatus.OK)
   async getAllSkills(
@@ -60,9 +66,12 @@ export class SkillsController {
 
   // Создание нового навыка
   @Post()
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Создать скилл' })
+  @ApiBody({ type: CreateSkillDTO })
   @ApiCreatedResponse({ type: SkillResponseDto, description: 'Скилл создан' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизован' })
+  @ApiBadRequestResponse({ description: 'Некорректные данные' })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   async createSkill(
@@ -74,11 +83,14 @@ export class SkillsController {
 
   // Изменение навыка
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Обновить скилл' })
   @ApiBody({ type: UpdateSkillDTO })
-  @ApiOkResponse({ type: SkillResponseDto, description: 'Скилл обновлен' })
+  @ApiOkResponse({ type: SkillResponseDto, description: 'Скилл обновлён' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизован' })
+  @ApiForbiddenResponse({ description: 'Нет прав на изменение' })
+  @ApiNotFoundResponse({ description: 'Скилл не найден' })
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async updateSkill(
     @Param('id', ParseIntPipe) id: number,
@@ -90,10 +102,13 @@ export class SkillsController {
 
   // Удаление навыка
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Удалить скилл' })
-  @ApiResponse({ status: 204, description: 'Скилл удален' })
+  @ApiNoContentResponse({ description: 'Скилл удалён' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизован' })
+  @ApiForbiddenResponse({ description: 'Нет прав на удаление' })
+  @ApiNotFoundResponse({ description: 'Скилл не найден' })
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteSkill(
     @Param('id', ParseIntPipe) id: number,
@@ -104,10 +119,12 @@ export class SkillsController {
 
   // Добавление навыка в избранное
   @Post(':id/favorite')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Добавить скилл в избранное' })
-  @ApiOkResponse({ description: 'Навык добавлен в избранное' })
+  @ApiOkResponse({ description: 'Добавлен' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизован' })
+  @ApiNotFoundResponse({ description: 'Скилл или пользователь не найден' })
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async addSkillToFavorites(
     @Param('id', ParseIntPipe) id: number,
@@ -118,10 +135,12 @@ export class SkillsController {
 
   // Удаление навыка из избранного
   @Delete(':id/favorite')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Удалить скилл из избранного' })
-  @ApiResponse({ status: 204, description: 'Скилл удален из избранного' })
+  @ApiNoContentResponse({ description: 'Удалён из избранного' })
+  @ApiUnauthorizedResponse({ description: 'Не авторизован' })
+  @ApiNotFoundResponse({ description: 'Скилл не в избранном' })
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeSkillFromFavorites(
     @Param('id', ParseIntPipe) id: number,

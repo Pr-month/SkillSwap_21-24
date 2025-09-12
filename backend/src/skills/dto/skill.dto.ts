@@ -26,20 +26,32 @@ export class CreateSkillDTO {
 
   @ApiProperty({ example: ['react1.png', 'react2.png'] })
   @IsArray()
+  @IsString({ each: true })
   images: string[];
 }
 
 export class UpdateSkillDTO extends PartialType(CreateSkillDTO) {}
 
 export class SkillResponseDto {
-  @ApiProperty({ example: '1' }) id: string;
+  @ApiProperty({ example: 1 }) id: number;
   @ApiProperty({ example: 'React Basics' }) title: string;
   @ApiProperty({ example: 'Введение в JSX, компоненты, состояние' })
   description: string;
-  @ApiProperty({ example: '1' }) categoryId: string;
-  @ApiProperty({ example: '1' }) ownerId: string;
+  @ApiProperty({ example: 1 }) categoryId: number;
+  @ApiProperty({ example: 42 }) ownerId: number;
   @ApiProperty({ type: [String], example: ['react1.png', 'react2.png'] })
   images: string[];
+}
+
+export class SkillListResponseDto {
+  @ApiProperty({ type: () => [SkillResponseDto] })
+  data: SkillResponseDto[];
+
+  @ApiProperty({ example: 1 })
+  page: number;
+
+  @ApiProperty({ example: 10 })
+  totalPages: number;
 }
 
 export class PaginationQueryDto {
